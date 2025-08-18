@@ -56,6 +56,10 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Korisnik sa ovim ID ne postoji"));
     }
 
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
     // Privatna metoda za mapiranje User -> UserDTO
     private UserDTO mapToDTO(User user) {
         return new UserDTO(

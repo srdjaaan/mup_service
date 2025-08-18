@@ -1,0 +1,47 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: #000dff;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+.navbar-logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.navbar-links a {
+    margin-left: 20px;
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.navbar-links a:hover {
+    color: #6b73ff;
+}
+
+.navbar-links button {
+    margin-left: 20px; /* Dodajemo razmak između linkova i dugmeta */
+    background-color: #6b73ff; /* Plava boja koja se slaže sa navbar-om */
+    color: white;
+    border: none;
+    border-radius: 5px; /* Zaobljene ivice */
+    padding: 10px 20px; /* Prilagođeni padding za veće dugme */
+    font-size: 16px;
+    cursor: pointer; /* Kursora postavljamo na pointer kad je iznad dugmeta */
+    transition: background-color 0.3s, transform 0.3s; /* Animacija pri hover-u */
+}
+
+.navbar-links button:hover {
+    background-color: #4e58d1; /* Tamnija nijansa pri hover-u */
+    transform: scale(1.05); /* Malo povećanje dugmeta pri hover-u */
+}
+
+.navbar-links button:focus {
+    outline: none; /* Uklanjamo outline pri fokusu */
+}
