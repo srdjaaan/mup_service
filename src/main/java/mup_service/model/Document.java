@@ -1,4 +1,6 @@
-package auth_service.model;
+package mup_service.model;
+
+import auth_service.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDate;

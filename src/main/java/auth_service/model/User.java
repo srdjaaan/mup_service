@@ -1,9 +1,10 @@
 package auth_service.model;
 
+import mup_service.model.Document;
+
 import java.time.LocalDate;
 
 import javax.persistence.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
