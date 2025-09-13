@@ -41,7 +41,7 @@ public class UserService {
             throw new RuntimeException("Pogrešna lozinka");
         }
 
-        return jwtUtil.generateToken(user.getUsername(), user.getRole().name());
+        return jwtUtil.generateToken(user.getUsername(), user.getRole().name(), user.getJmbg());
     }
 
     public List<UserDTO> getAllUsers() {

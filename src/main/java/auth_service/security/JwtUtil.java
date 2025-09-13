@@ -17,28 +17,44 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(JWT_SECRET.getBytes());
     }
 
-    // Generiše JWT token sa username i role
-    public String generateToken(String username, String role) {
+    /**
+     * Generiše JWT token sa username, rolom i JMBG-om korisnika.
+     */
+    public String generateToken(String username, String role, String jmbg) {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("role", role)
+                .claim("jmbg", jmbg) // Dodaj JMBG claim
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION_MS))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    // Parsira username iz tokena
+    /**
+     * Parsira username iz tokena
+     */
     public String getUsernameFromToken(String token) {
         return parseClaims(token).getSubject();
     }
 
-    // Parsira rolu iz tokena
+    /**
+     * Parsira rolu iz tokena
+     */
     public String getRoleFromToken(String token) {
         return parseClaims(token).get("role", String.class);
     }
 
-    // Validacija tokena
+    /**
+     * Parsira JMBG iz tokena
+     */
+    public String getJmbgFromToken(String token) {
+        return parseClaims(token).get("jmbg", String.class);
+    }
+
+    /**
+     * Validacija tokena
+     */
     public boolean validateToken(String token) {
         try {
             parseClaims(token);
@@ -48,7 +64,9 @@ public class JwtUtil {
         }
     }
 
-    // Privatna metoda za parsiranje claims
+    /**
+     * Privatna metoda za parsiranje claims
+     */
     private Claims parseClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())

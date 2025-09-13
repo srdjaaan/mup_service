@@ -12,9 +12,16 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d authdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   auth-service:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: auth_service
     ports:
       - "8080:8080"
@@ -23,10 +30,9 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_FILTER_CORSFILTER: DEBUG
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_CORS: DEBUG
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
 volumes:
   postgres_data:
