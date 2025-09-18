@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -110,8 +111,10 @@ public class ZahtevService {
     }
     
     private String generisiBrojLicneKarte() {
-        // Generiši jedinstveni broj lične karte
-        return "LK" + System.currentTimeMillis();
+        // Generiši jedinstveni broj lične karte sa 5 cifara
+        Random random = new Random();
+        int broj = random.nextInt(90000) + 10000; // 10000-99999
+        return "LK" + broj;
     }
     
     public List<ZahtevDTO> getZahteviZaGradjanina(String jmbg) {
@@ -145,7 +148,13 @@ public class ZahtevService {
     
     public List<Document> getDokumentiZaKorisnika(String jmbg) {
         return licnaKartaRepository.findByJmbg(jmbg).stream()
-                .map(LicnaKarta::getDocument)
+                .map(licnaKarta -> {
+                    Document doc = licnaKarta.getDocument();
+                    // Dodaj dodatne podatke o ličnoj karti
+                    doc.setTipDokumenta("LICNA_KARTA");
+                    doc.setBrojDokumenta(licnaKarta.getBrojLicneKarte());
+                    return doc;
+                })
                 .collect(Collectors.toList());
     }
     

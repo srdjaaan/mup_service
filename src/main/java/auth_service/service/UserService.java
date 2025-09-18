@@ -137,7 +137,9 @@ public class UserService {
                 document.getBirthday(),
                 document.getPlaceOfBirth(),
                 document.getCreatedAt(),
-                document.getExpiresAt()
+                document.getExpiresAt(),
+                document.getTipDokumenta(),
+                document.getBrojDokumenta()
         );
     }
 

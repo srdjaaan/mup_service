@@ -16,6 +16,12 @@ public class Document {
     private String placeOfBirth;
     private LocalDate createdAt;
     private LocalDate expiresAt;
+    
+    @Transient
+    private String tipDokumenta;
+    
+    @Transient
+    private String brojDokumenta;
 
     @Column(name = "user_jmbg")
     private String userJmbg;
@@ -82,5 +88,21 @@ public class Document {
 
     public void setUserJmbg(String userJmbg) {
         this.userJmbg = userJmbg;
+    }
+    
+    public String getTipDokumenta() {
+        return tipDokumenta;
+    }
+    
+    public void setTipDokumenta(String tipDokumenta) {
+        this.tipDokumenta = tipDokumenta;
+    }
+    
+    public String getBrojDokumenta() {
+        return brojDokumenta;
+    }
+    
+    public void setBrojDokumenta(String brojDokumenta) {
+        this.brojDokumenta = brojDokumenta;
     }
 }

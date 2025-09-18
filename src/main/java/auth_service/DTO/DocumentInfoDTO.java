@@ -11,6 +11,8 @@ public class DocumentInfoDTO {
     private String placeOfBirth;
     private LocalDate createdAt;
     private LocalDate expiresAt;
+    private String tipDokumenta;
+    private String brojDokumenta;
     
     public DocumentInfoDTO() {}
     
@@ -23,6 +25,20 @@ public class DocumentInfoDTO {
         this.placeOfBirth = placeOfBirth;
         this.createdAt = createdAt;
         this.expiresAt = expiresAt;
+    }
+    
+    public DocumentInfoDTO(Long id, String name, String lastname, LocalDate birthday, 
+                          String placeOfBirth, LocalDate createdAt, LocalDate expiresAt,
+                          String tipDokumenta, String brojDokumenta) {
+        this.id = id;
+        this.name = name;
+        this.lastname = lastname;
+        this.birthday = birthday;
+        this.placeOfBirth = placeOfBirth;
+        this.createdAt = createdAt;
+        this.expiresAt = expiresAt;
+        this.tipDokumenta = tipDokumenta;
+        this.brojDokumenta = brojDokumenta;
     }
     
     // Getters i Setters
@@ -80,6 +96,22 @@ public class DocumentInfoDTO {
     
     public void setExpiresAt(LocalDate expiresAt) {
         this.expiresAt = expiresAt;
+    }
+    
+    public String getTipDokumenta() {
+        return tipDokumenta;
+    }
+    
+    public void setTipDokumenta(String tipDokumenta) {
+        this.tipDokumenta = tipDokumenta;
+    }
+    
+    public String getBrojDokumenta() {
+        return brojDokumenta;
+    }
+    
+    public void setBrojDokumenta(String brojDokumenta) {
+        this.brojDokumenta = brojDokumenta;
     }
 }
 
