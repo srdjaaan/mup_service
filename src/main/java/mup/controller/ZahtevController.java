@@ -3,6 +3,7 @@ package mup.controller;
 import mup.DTO.KreiranjeZahtevaDTO;
 import mup.DTO.OdobravanjeZahtevaDTO;
 import mup.DTO.ZahtevDTO;
+import mup.model.Document;
 import mup.service.ZahtevService;
 import mup.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,6 +129,30 @@ public class ZahtevController {
             
             ZahtevDTO zahtev = zahtevService.getZahtevById(zahtevId);
             return ResponseEntity.ok(zahtev);
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+    
+    @GetMapping("/korisnik/{jmbg}/dokumenti")
+    public ResponseEntity<?> getDokumentiZaKorisnika(@PathVariable String jmbg, HttpServletRequest request) {
+        try {
+            String token = extractTokenFromRequest(request);
+            if (token == null || !jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nevažeći token");
+            }
+            
+            // Proveri da li korisnik traži svoje dokumente ili je policajac
+            String tokenJmbg = jwtUtil.getJmbgFromToken(token);
+            String role = jwtUtil.getRoleFromToken(token);
+            
+            if (!jmbg.equals(tokenJmbg) && !"POLICAJAC".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Možete videti samo svoje dokumente");
+            }
+            
+            List<Document> dokumenti = zahtevService.getDokumentiZaKorisnika(jmbg);
+            return ResponseEntity.ok(dokumenti);
             
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

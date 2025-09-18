@@ -143,6 +143,12 @@ public class ZahtevService {
         return convertToDTO(zahtev);
     }
     
+    public List<Document> getDokumentiZaKorisnika(String jmbg) {
+        return licnaKartaRepository.findByJmbg(jmbg).stream()
+                .map(LicnaKarta::getDocument)
+                .collect(Collectors.toList());
+    }
+    
     private ZahtevDTO convertToDTO(Zahtev zahtev) {
         ZahtevDTO dto = new ZahtevDTO();
         dto.setId(zahtev.getId());

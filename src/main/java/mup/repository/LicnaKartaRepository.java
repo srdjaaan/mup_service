@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface LicnaKartaRepository extends JpaRepository<LicnaKarta, Long> {
     
-    Optional<LicnaKarta> findByJmbg(String jmbg);
+    List<LicnaKarta> findByJmbg(String jmbg);
     
     Optional<LicnaKarta> findByBrojLicneKarte(String brojLicneKarte);
     
