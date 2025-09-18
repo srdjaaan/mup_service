@@ -1,9 +1,12 @@
 package auth_service.service;
 
 import auth_service.DTO.UserDTO;
+import auth_service.DTO.UserWithDocumentsDTO;
+import auth_service.DTO.DocumentInfoDTO;
 import auth_service.model.User;
 import auth_service.repository.UserRepository;
 import auth_service.security.JwtUtil;
+import mup.model.Document;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -58,6 +61,43 @@ public class UserService {
 
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username).orElse(null);
+    }
+    
+    public User getUserObjectByJmbg(String jmbg) {
+        return userRepository.findById(jmbg)
+                .orElseThrow(() -> new RuntimeException("Korisnik sa ovim JMBG ne postoji"));
+    }
+    
+    public UserWithDocumentsDTO getUserWithDocumentsByJmbg(String jmbg) {
+        User user = userRepository.findById(jmbg)
+                .orElseThrow(() -> new RuntimeException("Korisnik sa ovim JMBG ne postoji"));
+        
+        // Za sada vraćamo praznu listu dokumenta jer se čuvaju u MUP servisu
+        List<DocumentInfoDTO> documentDTOs = List.of();
+        
+        return new UserWithDocumentsDTO(
+                user.getJmbg(),
+                user.getName(),
+                user.getLastname(),
+                user.getUsername(),
+                user.getBirthday(),
+                user.getPlaceOfBirth(),
+                user.getRole(),
+                user.getGender(),
+                documentDTOs
+        );
+    }
+    
+    private DocumentInfoDTO mapDocumentToDTO(Document document) {
+        return new DocumentInfoDTO(
+                document.getId(),
+                document.getName(),
+                document.getLastname(),
+                document.getBirthday(),
+                document.getPlaceOfBirth(),
+                document.getCreatedAt(),
+                document.getExpiresAt()
+        );
     }
 
     // Privatna metoda za mapiranje User -> UserDTO

@@ -2,6 +2,7 @@ package auth_service.controller;
 
 import auth_service.DTO.JwtResponse;
 import auth_service.DTO.UserDTO;
+import auth_service.DTO.UserWithDocumentsDTO;
 import auth_service.model.User;
 import auth_service.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -59,6 +60,28 @@ public class AuthController {
     public ResponseEntity<?> getUserByJmbg(@PathVariable String jmbg) {
         try {
             UserDTO user = userService.getUserByJmbg(jmbg);
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+    
+    // Dobavljanje User objekta po JMBG-u (za MUP servis)
+    @GetMapping("/user/object/{jmbg}")
+    public ResponseEntity<?> getUserObjectByJmbg(@PathVariable String jmbg) {
+        try {
+            User user = userService.getUserObjectByJmbg(jmbg);
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+    
+    // Dobavljanje korisnika sa dokumentima po JMBG-u
+    @GetMapping("/user/{jmbg}/documents")
+    public ResponseEntity<?> getUserWithDocuments(@PathVariable String jmbg) {
+        try {
+            UserWithDocumentsDTO user = userService.getUserWithDocumentsByJmbg(jmbg);
             return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

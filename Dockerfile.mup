@@ -1,0 +1,32 @@
+# Dockerfile za MUP Service
+FROM maven:3.9.9-eclipse-temurin-17 AS build
+
+# Postavka radnog direktorijuma
+WORKDIR /app
+
+# Kopiranje pom.xml
+COPY pom-mup.xml pom.xml
+
+# Instaliranje Maven dependencies
+RUN mvn dependency:go-offline -B
+
+# Kopiranje source koda
+COPY src ./src
+
+# Build aplikacije
+RUN mvn clean package -DskipTests
+
+# Runtime stage
+FROM eclipse-temurin:17-jre
+
+# Postavka radnog direktorijuma
+WORKDIR /app
+
+# Kopiranje JAR fajla iz build stage
+COPY --from=build /app/target/mup_service-1.0-SNAPSHOT.jar app.jar
+
+# Ekspozicija porta
+EXPOSE 8081
+
+# Pokretanje aplikacije
+CMD ["java", "-jar", "app.jar", "--spring.profiles.active=mup"]

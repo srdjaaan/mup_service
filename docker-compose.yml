@@ -12,6 +12,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d authdb"]
       interval: 5s
@@ -22,6 +23,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        MAIN_CLASS: auth_service.AuthServiceApplication
     container_name: auth_service
     ports:
       - "8080:8080"
@@ -33,6 +36,25 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  mup-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.mup
+    container_name: mup_service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mup_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_PROFILES_ACTIVE: mup
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
 
 volumes:
   postgres_data:

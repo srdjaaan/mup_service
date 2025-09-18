@@ -1,10 +1,10 @@
 package mup.model;
 
-import auth_service.model.Document;
 import auth_service.model.Gender;
 
 import javax.persistence.*;
 
+@Entity
 @Table(name = "licne_karte")
 public class LicnaKarta {
 
@@ -12,7 +12,8 @@ public class LicnaKarta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Embedded
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "document_id")
     private Document document;
 
     @Enumerated(EnumType.STRING)

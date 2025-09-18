@@ -1,4 +1,6 @@
-package auth_service.model;
+package mup.model;
+
+import auth_service.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -15,9 +17,8 @@ public class Document {
     private LocalDate createdAt;
     private LocalDate expiresAt;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(name = "user_jmbg")
+    private String userJmbg;
 
     public Long getId() {
         return id;
@@ -75,11 +76,11 @@ public class Document {
         this.expiresAt = expiresAt;
     }
 
-    public User getUser() {
-        return user;
+    public String getUserJmbg() {
+        return userJmbg;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserJmbg(String userJmbg) {
+        this.userJmbg = userJmbg;
     }
 }
