@@ -1,689 +1,725 @@
 {
-	"info": {
-		"_postman_id": "mup-service-complete-api",
-		"name": "MUP Service - Complete API Collection",
-		"description": "Kompletna kolekcija API endpointa za Auth Service i MUP Service",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "Auth Service",
-			"item": [
-				{
-					"name": "User Registration",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"jmbg\": \"1234567890123\",\n  \"name\": \"Marko\",\n  \"lastname\": \"Marković\",\n  \"username\": \"marko123\",\n  \"password\": \"password123\",\n  \"birthday\": \"1990-01-01\",\n  \"placeOfBirth\": \"Beograd\",\n  \"role\": \"GRADJANIN\",\n  \"gender\": \"MUSKI\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url_auth}}/api/auth/register",
-							"host": [
-								"{{base_url_auth}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"register"
-							]
-						},
-						"description": "Registracija novog korisnika (GRADJANIN ili POLICAJAC)"
-					}
-				},
-				{
-					"name": "User Login",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"username\": \"marko123\",\n  \"password\": \"password123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url_auth}}/api/auth/login",
-							"host": [
-								"{{base_url_auth}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						},
-						"description": "Prijavljivanje korisnika i dobijanje JWT tokena"
-					}
-				},
-				{
-					"name": "Get All Users",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url_auth}}/api/auth/users",
-							"host": [
-								"{{base_url_auth}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"users"
-							]
-						},
-						"description": "Dohvatanje svih korisnika"
-					}
-				},
-				{
-					"name": "Get User by JMBG",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url_auth}}/api/auth/user/1234567890123",
-							"host": [
-								"{{base_url_auth}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"user",
-								"1234567890123"
-							]
-						},
-						"description": "Dohvatanje korisnika po JMBG-u"
-					}
-				},
-				{
-					"name": "Get User Object by JMBG",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url_auth}}/api/auth/user/object/1234567890123",
-							"host": [
-								"{{base_url_auth}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"user",
-								"object",
-								"1234567890123"
-							]
-						},
-						"description": "Dohvatanje User objekta po JMBG-u (za MUP servis)"
-					}
-				},
-				{
-					"name": "Get User with Documents",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url_auth}}/api/auth/user/1234567890123/documents",
-							"host": [
-								"{{base_url_auth}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"user",
-								"1234567890123",
-								"documents"
-							]
-						},
-						"description": "Dohvatanje korisnika sa svim njegovim dokumentima"
-					}
-				}
-			]
-		},
-		{
-			"name": "MUP Service",
-			"item": [
-				{
-					"name": "Create Request (GRADJANIN)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token_gradjanin}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"tipDokumenta\": \"LICNA_KARTA\",\n  \"razlog\": \"Prva lična karta\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url_mup}}/api/zahtevi/kreiraj",
-							"host": [
-								"{{base_url_mup}}"
-							],
-							"path": [
-								"api",
-								"zahtevi",
-								"kreiraj"
-							]
-						},
-						"description": "Kreiranje novog zahteva (samo GRADJANIN)"
-					}
-				},
-				{
-					"name": "Get My Requests (GRADJANIN)",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token_gradjanin}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url_mup}}/api/zahtevi/moji-zahtevi",
-							"host": [
-								"{{base_url_mup}}"
-							],
-							"path": [
-								"api",
-								"zahtevi",
-								"moji-zahtevi"
-							]
-						},
-						"description": "Dohvatanje svih zahteva trenutnog korisnika (samo GRADJANIN)"
-					}
-				},
-				{
-					"name": "Get Requests Waiting (POLICAJAC)",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token_policajac}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url_mup}}/api/zahtevi/na-cekanju",
-							"host": [
-								"{{base_url_mup}}"
-							],
-							"path": [
-								"api",
-								"zahtevi",
-								"na-cekanju"
-							]
-						},
-						"description": "Dohvatanje zahteva na čekanju (samo POLICAJAC)"
-					}
-				},
-				{
-					"name": "Approve/Reject Request (POLICAJAC)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token_policajac}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"status\": \"ODOBREN\",\n  \"komentar\": \"Zahtev je odobren\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url_mup}}/api/zahtevi/1/odobri",
-							"host": [
-								"{{base_url_mup}}"
-							],
-							"path": [
-								"api",
-								"zahtevi",
-								"1",
-								"odobri"
-							]
-						},
-						"description": "Odobravanje/odbijanje zahteva (samo POLICAJAC)"
-					}
-				},
-				{
-					"name": "Get Request by ID",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url_mup}}/api/zahtevi/1",
-							"host": [
-								"{{base_url_mup}}"
-							],
-							"path": [
-								"api",
-								"zahtevi",
-								"1"
-							]
-						},
-						"description": "Dohvatanje zahteva po ID-u"
-					}
-				},
-				{
-					"name": "Get User Documents (MUP)",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{jwt_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url_mup}}/api/zahtevi/korisnik/1234567890123/dokumenti",
-							"host": [
-								"{{base_url_mup}}"
-							],
-							"path": [
-								"api",
-								"zahtevi",
-								"korisnik",
-								"1234567890123",
-								"dokumenti"
-							]
-						},
-						"description": "Dohvatanje dokumenata korisnika (MUP servis)"
-					}
-				}
-			]
-		},
-		{
-			"name": "Test Scenarios",
-			"item": [
-				{
-					"name": "Scenario 1: Complete Workflow",
-					"item": [
-						{
-							"name": "1. Register GRADJANIN",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"jmbg\": \"1111111111111\",\n  \"name\": \"Ana\",\n  \"lastname\": \"Anić\",\n  \"username\": \"ana123\",\n  \"password\": \"password123\",\n  \"birthday\": \"1992-03-15\",\n  \"placeOfBirth\": \"Niš\",\n  \"role\": \"GRADJANIN\",\n  \"gender\": \"ZENSKI\"\n}"
-								},
-								"url": {
-									"raw": "{{base_url_auth}}/api/auth/register",
-									"host": [
-										"{{base_url_auth}}"
-									],
-									"path": [
-										"api",
-										"auth",
-										"register"
-									]
-								}
-							}
-						},
-						{
-							"name": "2. Login GRADJANIN",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"username\": \"ana123\",\n  \"password\": \"password123\"\n}"
-								},
-								"url": {
-									"raw": "{{base_url_auth}}/api/auth/login",
-									"host": [
-										"{{base_url_auth}}"
-									],
-									"path": [
-										"api",
-										"auth",
-										"login"
-									]
-								}
-							}
-						},
-						{
-							"name": "3. Create Request",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									},
-									{
-										"key": "Authorization",
-										"value": "Bearer {{jwt_token_gradjanin}}"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"tipDokumenta\": \"LICNA_KARTA\",\n  \"razlog\": \"Prva lična karta\"\n}"
-								},
-								"url": {
-									"raw": "{{base_url_mup}}/api/zahtevi/kreiraj",
-									"host": [
-										"{{base_url_mup}}"
-									],
-									"path": [
-										"api",
-										"zahtevi",
-										"kreiraj"
-									]
-								}
-							}
-						},
-						{
-							"name": "4. Register POLICAJAC",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"jmbg\": \"2222222222222\",\n  \"name\": \"Stefan\",\n  \"lastname\": \"Stefanović\",\n  \"username\": \"stefan123\",\n  \"password\": \"password123\",\n  \"birthday\": \"1980-12-10\",\n  \"placeOfBirth\": \"Subotica\",\n  \"role\": \"POLICAJAC\",\n  \"gender\": \"MUSKI\"\n}"
-								},
-								"url": {
-									"raw": "{{base_url_auth}}/api/auth/register",
-									"host": [
-										"{{base_url_auth}}"
-									],
-									"path": [
-										"api",
-										"auth",
-										"register"
-									]
-								}
-							}
-						},
-						{
-							"name": "5. Login POLICAJAC",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"username\": \"stefan123\",\n  \"password\": \"password123\"\n}"
-								},
-								"url": {
-									"raw": "{{base_url_auth}}/api/auth/login",
-									"host": [
-										"{{base_url_auth}}"
-									],
-									"path": [
-										"api",
-										"auth",
-										"login"
-									]
-								}
-							}
-						},
-						{
-							"name": "6. Get Waiting Requests",
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "Bearer {{jwt_token_policajac}}"
-									}
-								],
-								"url": {
-									"raw": "{{base_url_mup}}/api/zahtevi/na-cekanju",
-									"host": [
-										"{{base_url_mup}}"
-									],
-									"path": [
-										"api",
-										"zahtevi",
-										"na-cekanju"
-									]
-								}
-							}
-						},
-						{
-							"name": "7. Approve Request",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									},
-									{
-										"key": "Authorization",
-										"value": "Bearer {{jwt_token_policajac}}"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"status\": \"ODOBREN\",\n  \"komentar\": \"Zahtev je odobren\"\n}"
-								},
-								"url": {
-									"raw": "{{base_url_mup}}/api/zahtevi/1/odobri",
-									"host": [
-										"{{base_url_mup}}"
-									],
-									"path": [
-										"api",
-										"zahtevi",
-										"1",
-										"odobri"
-									]
-								}
-							}
-						},
-						{
-							"name": "8. Get User with Documents",
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "Bearer {{jwt_token_gradjanin}}"
-									}
-								],
-								"url": {
-									"raw": "{{base_url_auth}}/api/auth/user/1111111111111/documents",
-									"host": [
-										"{{base_url_auth}}"
-									],
-									"path": [
-										"api",
-										"auth",
-										"user",
-										"1111111111111",
-										"documents"
-									]
-								}
-							}
-						}
-					]
-				},
-				{
-					"name": "Scenario 2: Security Tests",
-					"item": [
-						{
-							"name": "Test: GRADJANIN tries to see others' documents",
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "Bearer {{jwt_token_gradjanin}}"
-									}
-								],
-								"url": {
-									"raw": "{{base_url_mup}}/api/zahtevi/korisnik/2222222222222/dokumenti",
-									"host": [
-										"{{base_url_mup}}"
-									],
-									"path": [
-										"api",
-										"zahtevi",
-										"korisnik",
-										"2222222222222",
-										"dokumenti"
-									]
-								},
-								"description": "Trebalo bi da vrati 403 Forbidden"
-							}
-						},
-						{
-							"name": "Test: POLICAJAC can see others' documents",
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Authorization",
-										"value": "Bearer {{jwt_token_policajac}}"
-									}
-								],
-								"url": {
-									"raw": "{{base_url_mup}}/api/zahtevi/korisnik/1111111111111/dokumenti",
-									"host": [
-										"{{base_url_mup}}"
-									],
-									"path": [
-										"api",
-										"zahtevi",
-										"korisnik",
-										"1111111111111",
-										"dokumenti"
-									]
-								},
-								"description": "Trebalo bi da vrati dokumenta"
-							}
-						},
-						{
-							"name": "Test: GRADJANIN tries to approve request",
-							"request": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									},
-									{
-										"key": "Authorization",
-										"value": "Bearer {{jwt_token_gradjanin}}"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"status\": \"ODOBREN\",\n  \"komentar\": \"Test\"\n}"
-								},
-								"url": {
-									"raw": "{{base_url_mup}}/api/zahtevi/1/odobri",
-									"host": [
-										"{{base_url_mup}}"
-									],
-									"path": [
-										"api",
-										"zahtevi",
-										"1",
-										"odobri"
-									]
-								},
-								"description": "Trebalo bi da vrati 403 Forbidden"
-							}
-						}
-					]
-				}
-			]
-		}
-	],
-	"variable": [
-		{
-			"key": "base_url_auth",
-			"value": "http://localhost:8080",
-			"type": "string"
-		},
-		{
-			"key": "base_url_mup",
-			"value": "http://localhost:8081",
-			"type": "string"
-		},
-		{
-			"key": "jwt_token",
-			"value": "",
-			"type": "string",
-			"description": "JWT token - kopiraj iz login response"
-		},
-		{
-			"key": "jwt_token_gradjanin",
-			"value": "",
-			"type": "string",
-			"description": "JWT token za GRADJANIN korisnika"
-		},
-		{
-			"key": "jwt_token_policajac",
-			"value": "",
-			"type": "string",
-			"description": "JWT token za POLICAJAC korisnika"
-		}
-	]
+  "info": {
+    "name": "MUP Service - Kompletna API Kolekcija",
+    "description": "Kompletna test kolekcija za MUP Service i Auth Service sa svim novim funkcionalnostima",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth Service",
+      "item": [
+        {
+          "name": "Register Gradjanin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jmbg\": \"1234567890123\",\n  \"name\": \"Marko\",\n  \"lastname\": \"Marković\",\n  \"username\": \"marko123\",\n  \"password\": \"password123\",\n  \"birthday\": \"1990-01-01\",\n  \"placeOfBirth\": \"Beograd\",\n  \"role\": \"GRADJANIN\",\n  \"gender\": \"MUSKI\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/auth/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register Policajac",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jmbg\": \"9876543210987\",\n  \"name\": \"Petar\",\n  \"lastname\": \"Petrović\",\n  \"username\": \"petar123\",\n  \"password\": \"password123\",\n  \"birthday\": \"1985-05-15\",\n  \"placeOfBirth\": \"Novi Sad\",\n  \"role\": \"POLICAJAC\",\n  \"gender\": \"MUSKI\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/auth/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login Gradjanin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"marko123\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login Policajac",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"petar123\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Dohvati sve korisnike",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{policajac_token}}",
+                "description": "JWT token za policajca"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/auth/users",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "auth", "users"]
+            }
+          }
+        },
+        {
+          "name": "Dohvati korisnika po JMBG",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{policajac_token}}",
+                "description": "JWT token za policajca"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/auth/user/{{jmbg}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "auth", "user", "{{jmbg}}"]
+            }
+          }
+        },
+        {
+          "name": "Dohvati korisnika sa dokumentima",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gradjanin_token}}",
+                "description": "JWT token za građanina"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8080/api/auth/user/{{jmbg}}/documents",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "auth", "user", "{{jmbg}}", "documents"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "MUP Service - Osnovni Endpointi",
+      "item": [
+        {
+          "name": "Kreiraj Zahtev za Ličnu Kartu",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gradjanin_token}}",
+                "description": "JWT token za građanina"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipDokumenta\": \"LICNA_KARTA\",\n  \"razlog\": \"Prva lična karta\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/zahtevi/kreiraj",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "zahtevi", "kreiraj"]
+            }
+          }
+        },
+        {
+          "name": "Kreiraj Zahtev za Produženje Lične Karte",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gradjanin_token}}",
+                "description": "JWT token za građanina"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipDokumenta\": \"PRODUZENJE_LICNE_KARTE\",\n  \"razlog\": \"Produženje istekle lične karte\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/zahtevi/kreiraj",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "zahtevi", "kreiraj"]
+            }
+          }
+        },
+        {
+          "name": "Moji Zahtevi (Gradjanin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gradjanin_token}}",
+                "description": "JWT token za građanina"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/zahtevi/moji-zahtevi",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "zahtevi", "moji-zahtevi"]
+            }
+          }
+        },
+        {
+          "name": "Zahtevi na Čekanju (Policajac)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{policajac_token}}",
+                "description": "JWT token za policajca"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/zahtevi/na-cekanju",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "zahtevi", "na-cekanju"]
+            }
+          }
+        },
+        {
+          "name": "Odobri Zahtev (Policajac)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{policajac_token}}",
+                "description": "JWT token za policajca"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ODOBREN\",\n  \"komentar\": \"Zahtev je odobren\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/zahtevi/{{zahtev_id}}/odobri",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "zahtevi", "{{zahtev_id}}", "odobri"]
+            }
+          }
+        },
+        {
+          "name": "Odbij Zahtev (Policajac)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{policajac_token}}",
+                "description": "JWT token za policajca"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ODBIJEN\",\n  \"komentar\": \"Nedostaju potrebni dokumenti\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/zahtevi/{{zahtev_id}}/odobri",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "zahtevi", "{{zahtev_id}}", "odobri"]
+            }
+          }
+        },
+        {
+          "name": "Pregled Zahteva po ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gradjanin_token}}",
+                "description": "JWT token"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/zahtevi/{{zahtev_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "zahtevi", "{{zahtev_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "MUP Service - Validacija i Dokumenti",
+      "item": [
+        {
+          "name": "Validiraj Ličnu Kartu",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gradjanin_token}}",
+                "description": "JWT token za građanina"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/zahtevi/korisnik/{{jmbg}}/validiraj-licnu-kartu",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "zahtevi", "korisnik", "{{jmbg}}", "validiraj-licnu-kartu"]
+            }
+          }
+        },
+        {
+          "name": "Dohvati Dokumente Korisnika",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gradjanin_token}}",
+                "description": "JWT token za građanina"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/zahtevi/korisnik/{{jmbg}}/dokumenti",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "zahtevi", "korisnik", "{{jmbg}}", "dokumenti"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "MUP Service - Admin Funkcije",
+      "item": [
+        {
+          "name": "Kreiraj Isteklu Ličnu Kartu (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{policajac_token}}",
+                "description": "JWT token za policajca (admin funkcija)"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/zahtevi/admin/kreiraj-isteklu-licnu-kartu/{{jmbg}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "zahtevi", "admin", "kreiraj-isteklu-licnu-kartu", "{{jmbg}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Test Scenariji",
+      "item": [
+        {
+          "name": "Scenario 1: Kompletni Workflow",
+          "item": [
+            {
+              "name": "1. Registruj Građanina",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"jmbg\": \"1111111111111\",\n  \"name\": \"Ana\",\n  \"lastname\": \"Anić\",\n  \"username\": \"ana123\",\n  \"password\": \"password123\",\n  \"birthday\": \"1992-03-15\",\n  \"placeOfBirth\": \"Kragujevac\",\n  \"role\": \"GRADJANIN\",\n  \"gender\": \"ZENSKI\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/api/auth/register",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8080",
+                  "path": ["api", "auth", "register"]
+                }
+              }
+            },
+            {
+              "name": "2. Login Građanina",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"ana123\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/api/auth/login",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8080",
+                  "path": ["api", "auth", "login"]
+                }
+              }
+            },
+            {
+              "name": "3. Kreiraj Zahtev za Ličnu Kartu",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{gradjanin_token}}",
+                    "description": "Kopiraj token iz prethodnog koraka"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tipDokumenta\": \"LICNA_KARTA\",\n  \"razlog\": \"Prva lična karta\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/zahtevi/kreiraj",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8081",
+                  "path": ["api", "zahtevi", "kreiraj"]
+                }
+              }
+            },
+            {
+              "name": "4. Login Policajca",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"petar123\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/api/auth/login",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8080",
+                  "path": ["api", "auth", "login"]
+                }
+              }
+            },
+            {
+              "name": "5. Odobri Zahtev",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{policajac_token}}",
+                    "description": "Kopiraj token iz prethodnog koraka"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ODOBREN\",\n  \"komentar\": \"Zahtev je odobren\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/zahtevi/{{zahtev_id}}/odobri",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8081",
+                  "path": ["api", "zahtevi", "{{zahtev_id}}", "odobri"]
+                }
+              }
+            },
+            {
+              "name": "6. Proveri Dokumente",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{gradjanin_token}}",
+                    "description": "Token građanina"
+                  }
+                ],
+                "url": {
+                  "raw": "http://localhost:8080/api/auth/user/1111111111111/documents",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8080",
+                  "path": ["api", "auth", "user", "1111111111111", "documents"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 2: Produženje Lične Karte",
+          "item": [
+            {
+              "name": "1. Kreiraj Isteklu Ličnu Kartu",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{policajac_token}}",
+                    "description": "JWT token za policajca"
+                  }
+                ],
+                "url": {
+                  "raw": "http://localhost:8081/api/zahtevi/admin/kreiraj-isteklu-licnu-kartu/1111111111111",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8081",
+                  "path": ["api", "zahtevi", "admin", "kreiraj-isteklu-licnu-kartu", "1111111111111"]
+                }
+              }
+            },
+            {
+              "name": "2. Validiraj Ličnu Kartu (Trebalo bi biti istekla)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{gradjanin_token}}",
+                    "description": "JWT token za građanina"
+                  }
+                ],
+                "url": {
+                  "raw": "http://localhost:8081/api/zahtevi/korisnik/1111111111111/validiraj-licnu-kartu",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8081",
+                  "path": ["api", "zahtevi", "korisnik", "1111111111111", "validiraj-licnu-kartu"]
+                }
+              }
+            },
+            {
+              "name": "3. Kreiraj Zahtev za Produženje",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{gradjanin_token}}",
+                    "description": "JWT token za građanina"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tipDokumenta\": \"PRODUZENJE_LICNE_KARTE\",\n  \"razlog\": \"Produženje istekle lične karte\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/zahtevi/kreiraj",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8081",
+                  "path": ["api", "zahtevi", "kreiraj"]
+                }
+              }
+            },
+            {
+              "name": "4. Odobri Zahtev za Produženje",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{policajac_token}}",
+                    "description": "JWT token za policajca"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ODOBREN\",\n  \"komentar\": \"Zahtev za produženje je odobren\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/zahtevi/{{zahtev_id}}/odobri",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8081",
+                  "path": ["api", "zahtevi", "{{zahtev_id}}", "odobri"]
+                }
+              }
+            },
+            {
+              "name": "5. Validiraj Ličnu Kartu (Trebalo bi biti validna)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{gradjanin_token}}",
+                    "description": "JWT token za građanina"
+                  }
+                ],
+                "url": {
+                  "raw": "http://localhost:8081/api/zahtevi/korisnik/1111111111111/validiraj-licnu-kartu",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8081",
+                  "path": ["api", "zahtevi", "korisnik", "1111111111111", "validiraj-licnu-kartu"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "gradjanin_token",
+      "value": "",
+      "description": "JWT token za građanina - kopiraj iz login odgovora"
+    },
+    {
+      "key": "policajac_token",
+      "value": "",
+      "description": "JWT token za policajca - kopiraj iz login odgovora"
+    },
+    {
+      "key": "zahtev_id",
+      "value": "1",
+      "description": "ID zahteva - kopiraj iz kreiranja zahteva"
+    },
+    {
+      "key": "jmbg",
+      "value": "1111111111111",
+      "description": "JMBG korisnika za testiranje"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Automatsko postavljanje tokena iz odgovora",
+          "if (pm.response && pm.response.json() && pm.response.json().token) {",
+          "    pm.collectionVariables.set('gradjanin_token', pm.response.json().token);",
+          "}"
+        ]
+      }
+    }
+  ]
 }

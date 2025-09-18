@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
@@ -40,6 +41,31 @@ public class ZahtevService {
         
         if (gradjanin.getRole() != Role.GRADJANIN) {
             throw new RuntimeException("Samo građani mogu kreirati zahteve");
+        }
+        
+        // Proveri da li lična karta već postoji
+        if (kreiranjeZahtevaDTO.getTipDokumenta() == TipDokumenta.LICNA_KARTA) {
+            if (licnaKartaRepository.existsByJmbg(jmbg)) {
+                // Proveri da li je lična karta validna
+                String validacijskaPoruka = validirajLicnuKartu(jmbg);
+                if (validacijskaPoruka != null) {
+                    throw new RuntimeException(validacijskaPoruka);
+                }
+                throw new RuntimeException("Lična karta već postoji za ovog korisnika");
+            }
+        }
+        
+        // Proveri da li je zahtev za produženje lične karte
+        if (kreiranjeZahtevaDTO.getTipDokumenta() == TipDokumenta.PRODUZENJE_LICNE_KARTE) {
+            if (!licnaKartaRepository.existsByJmbg(jmbg)) {
+                throw new RuntimeException("Korisnik nema ličnu kartu za produženje");
+            }
+            
+            // Proveri da li je lična karta stvarno istekla
+            String validacijskaPoruka = validirajLicnuKartu(jmbg);
+            if (validacijskaPoruka == null) {
+                throw new RuntimeException("Lična karta je još uvek validna, nema potrebe za produženjem");
+            }
         }
         
         Zahtev zahtev = new Zahtev(gradjanin.getJmbg(), kreiranjeZahtevaDTO.getTipDokumenta(), kreiranjeZahtevaDTO.getRazlog());
@@ -71,9 +97,13 @@ public class ZahtevService {
         zahtev.setKomentar(odobravanjeDTO.getKomentar());
         zahtev.setDatumOdobrenja(LocalDateTime.now());
         
-        // Ako je zahtev odobren, kreiraj ličnu kartu
+        // Ako je zahtev odobren, kreiraj ličnu kartu ili produži postojeću
         if (odobravanjeDTO.getStatus() == StatusZahteva.ODOBREN) {
-            kreirajLicnuKartu(zahtev);
+            if (zahtev.getTipDokumenta() == TipDokumenta.LICNA_KARTA) {
+                kreirajLicnuKartu(zahtev);
+            } else if (zahtev.getTipDokumenta() == TipDokumenta.PRODUZENJE_LICNE_KARTE) {
+                produziLicnuKartu(zahtev);
+            }
         }
         
         zahtev = zahtevRepository.save(zahtev);
@@ -110,11 +140,100 @@ public class ZahtevService {
         }
     }
     
+    private void produziLicnuKartu(Zahtev zahtev) {
+        if (zahtev.getTipDokumenta() == TipDokumenta.PRODUZENJE_LICNE_KARTE) {
+            User gradjanin = authServiceClient.getUserByJmbg(zahtev.getGradjaninJmbg());
+            
+            if (gradjanin == null) {
+                throw new RuntimeException("Korisnik sa JMBG-om " + zahtev.getGradjaninJmbg() + " nije pronađen");
+            }
+            
+            // Pronađi postojeću ličnu kartu
+            List<LicnaKarta> postojeceLicneKarte = licnaKartaRepository.findByJmbg(zahtev.getGradjaninJmbg());
+            if (postojeceLicneKarte.isEmpty()) {
+                throw new RuntimeException("Korisnik nema ličnu kartu za produženje");
+            }
+            
+            // Ažuriraj postojeću ličnu kartu
+            LicnaKarta postojeceLicnaKarta = postojeceLicneKarte.get(0);
+            Document postojeciDocument = postojeceLicnaKarta.getDocument();
+            postojeciDocument.setCreatedAt(LocalDateTime.now().toLocalDate()); // Nova datum kreiranja
+            postojeciDocument.setExpiresAt(LocalDateTime.now().plusYears(10).toLocalDate()); // Nova datum isteka
+            
+            licnaKartaRepository.save(postojeceLicnaKarta);
+        }
+    }
+    
     private String generisiBrojLicneKarte() {
         // Generiši jedinstveni broj lične karte sa 5 cifara
         Random random = new Random();
         int broj = random.nextInt(90000) + 10000; // 10000-99999
         return "LK" + broj;
+    }
+    
+    public String validirajLicnuKartu(String jmbg) {
+        List<LicnaKarta> licneKarte = licnaKartaRepository.findByJmbg(jmbg);
+        
+        if (licneKarte.isEmpty()) {
+            return "Korisnik nema ličnu kartu";
+        }
+        
+        // Pronađi najnoviju ličnu kartu
+        LicnaKarta najnovijaLicnaKarta = licneKarte.stream()
+                .max((lk1, lk2) -> lk1.getDocument().getCreatedAt().compareTo(lk2.getDocument().getCreatedAt()))
+                .orElse(null);
+        
+        if (najnovijaLicnaKarta == null) {
+            return "Korisnik nema ličnu kartu";
+        }
+        
+        LocalDate danas = LocalDate.now();
+        LocalDate datumIsteka = najnovijaLicnaKarta.getDocument().getExpiresAt();
+        
+        if (danas.isAfter(datumIsteka)) {
+            return "Lična karta je istekla. Morate poslati zahtev da produžite ličnu kartu.";
+        }
+        
+        return null; // Lična karta je validna
+    }
+    
+    public void kreirajIstekluLicnuKartu(String jmbg) {
+        User gradjanin = authServiceClient.getUserByJmbg(jmbg);
+        
+        if (gradjanin == null) {
+            throw new RuntimeException("Korisnik sa JMBG-om " + jmbg + " nije pronađen");
+        }
+        
+        // Proveri da li već postoji lična karta
+        List<LicnaKarta> postojeceLicneKarte = licnaKartaRepository.findByJmbg(jmbg);
+        if (!postojeceLicneKarte.isEmpty()) {
+            // Ažuriraj postojeću ličnu kartu da bude istekla
+            LicnaKarta postojeceLicnaKarta = postojeceLicneKarte.get(0);
+            Document postojeciDocument = postojeceLicnaKarta.getDocument();
+            postojeciDocument.setCreatedAt(LocalDate.now().minusYears(11)); // Kreirana pre 11 godina
+            postojeciDocument.setExpiresAt(LocalDate.now().minusYears(1)); // Istekla pre 1 godine
+            licnaKartaRepository.save(postojeceLicnaKarta);
+            return;
+        }
+        
+        // Kreiraj Document sa isteklom ličnom kartom
+        Document document = new Document();
+        document.setName(gradjanin.getName());
+        document.setLastname(gradjanin.getLastname());
+        document.setBirthday(gradjanin.getBirthday());
+        document.setPlaceOfBirth(gradjanin.getPlaceOfBirth());
+        document.setUserJmbg(gradjanin.getJmbg());
+        document.setCreatedAt(LocalDate.now().minusYears(11)); // Kreirana pre 11 godina
+        document.setExpiresAt(LocalDate.now().minusYears(1)); // Istekla pre 1 godine
+        
+        // Kreiraj Ličnu Kartu
+        LicnaKarta licnaKarta = new LicnaKarta();
+        licnaKarta.setDocument(document);
+        licnaKarta.setGender(gradjanin.getGender());
+        licnaKarta.setJmbg(gradjanin.getJmbg());
+        licnaKarta.setBrojLicneKarte(generisiBrojLicneKarte());
+        
+        licnaKartaRepository.save(licnaKarta);
     }
     
     public List<ZahtevDTO> getZahteviZaGradjanina(String jmbg) {

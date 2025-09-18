@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/zahtevi")
@@ -142,18 +143,68 @@ public class ZahtevController {
             if (token == null || !jwtUtil.validateToken(token)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nevažeći token");
             }
-            
+
             // Proveri da li korisnik traži svoje dokumente ili je policajac
             String tokenJmbg = jwtUtil.getJmbgFromToken(token);
             String role = jwtUtil.getRoleFromToken(token);
-            
+
             if (!jmbg.equals(tokenJmbg) && !"POLICAJAC".equals(role)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Možete videti samo svoje dokumente");
             }
-            
+
             List<Document> dokumenti = zahtevService.getDokumentiZaKorisnika(jmbg);
             return ResponseEntity.ok(dokumenti);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/korisnik/{jmbg}/validiraj-licnu-kartu")
+    public ResponseEntity<?> validirajLicnuKartu(@PathVariable String jmbg, HttpServletRequest request) {
+        try {
+            String token = extractTokenFromRequest(request);
+            if (token == null || !jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nevažeći token");
+            }
+
+            // Proveri da li korisnik traži svoje dokumente ili je policajac
+            String tokenJmbg = jwtUtil.getJmbgFromToken(token);
+            String role = jwtUtil.getRoleFromToken(token);
+
+            if (!jmbg.equals(tokenJmbg) && !"POLICAJAC".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Možete videti samo svoje dokumente");
+            }
+
+            String validacijskaPoruka = zahtevService.validirajLicnuKartu(jmbg);
             
+            if (validacijskaPoruka == null) {
+                return ResponseEntity.ok(Map.of("status", "VALIDNA", "poruka", "Lična karta je validna"));
+            } else {
+                return ResponseEntity.ok(Map.of("status", "NEVALIDNA", "poruka", validacijskaPoruka));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/admin/kreiraj-isteklu-licnu-kartu/{jmbg}")
+    public ResponseEntity<?> kreirajIstekluLicnuKartu(@PathVariable String jmbg, HttpServletRequest request) {
+        try {
+            String token = extractTokenFromRequest(request);
+            if (token == null || !jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nevažeći token");
+            }
+
+            String role = jwtUtil.getRoleFromToken(token);
+            if (!"POLICAJAC".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Samo policajci mogu kreirati istekle lične karte");
+            }
+
+            zahtevService.kreirajIstekluLicnuKartu(jmbg);
+            return ResponseEntity.ok(Map.of("poruka", "Istekla lična karta je kreirana za testiranje"));
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
