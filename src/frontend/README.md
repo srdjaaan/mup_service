@@ -1,70 +1,113 @@
-# Getting Started with Create React App
+# eUprava Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Frontend aplikacija za eUprava sistem - upravljanje dokumentima i zahtevima.
 
-## Available Scripts
+## Funkcionalnosti
 
-In the project directory, you can run:
+### Za sve korisnike:
+- **Login/Registracija** - Prijava i registracija korisnika
+- **JWT Token Management** - Automatsko upravljanje tokenima
+- **Profil stranica** - Pregled ličnih podataka i dokumenata
+- **Responsive Design** - Prilagođeno za sve uređaje
 
-### `npm start`
+### Za građane (GRADJANIN):
+- **Kreiranje zahteva** - Slanje zahteva za kreiranje lične karte
+- **Produženje lične karte** - Slanje zahteva za produženje istekle lične karte
+- **Pregled zahteva** - Pregled svih poslatih zahteva sa statusom
+- **Validacija** - Automatska validacija pre slanja zahteva
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Za policajce (POLICAJAC):
+- **Pregled zahteva** - Pregled svih zahteva na čekanju
+- **Odobravanje/Odbijanje** - Obrađivanje zahteva građana
+- **Modal forma** - Detaljno pregledanje i komentarisanje zahteva
+- **Automatsko osvežavanje** - Lista se automatski osvežava nakon obrađivanja
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Tehnologije
 
-### `npm test`
+- **React 18** - Frontend framework
+- **React Router** - Ruting
+- **Axios** - HTTP klijent
+- **CSS3** - Stilizovanje
+- **JWT** - Autentifikacija
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Instalacija i pokretanje
 
-### `npm run build`
+1. Instaliraj dependencies:
+```bash
+npm install
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+2. Pokreni development server:
+```bash
+npm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+3. Aplikacija će biti dostupna na `http://localhost:3000`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## API Endpoints
 
-### `npm run eject`
+### Auth Service (port 8080)
+- `POST /api/auth/login` - Prijava
+- `POST /api/auth/register` - Registracija
+- `GET /api/auth/users` - Lista korisnika (policajci)
+- `GET /api/auth/user/{jmbg}` - Korisnik po JMBG
+- `GET /api/auth/user/{jmbg}/documents` - Korisnik sa dokumentima
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### MUP Service (port 8081)
+- `POST /api/zahtevi/kreiraj` - Kreiranje zahteva
+- `GET /api/zahtevi/moji-zahtevi` - Moji zahtevi (građani)
+- `GET /api/zahtevi/na-cekanju` - Zahtevi na čekanju (policajci)
+- `POST /api/zahtevi/{id}/odobri` - Odobravanje zahteva
+- `GET /api/zahtevi/{id}` - Zahtev po ID
+- `GET /api/zahtevi/korisnik/{jmbg}/validiraj-licnu-kartu` - Validacija lične karte
+- `GET /api/zahtevi/korisnik/{jmbg}/dokumenti` - Dokumenti korisnika
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Struktura projekta
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```
+src/
+├── api/
+│   ├── axios.js          # Osnovni axios instance sa interceptorima
+│   └── mupApi.js         # MUP service API funkcije
+├── components/
+│   ├── AuthForms.css     # Stilovi za login/register forme
+│   ├── LoginForm.js      # Login komponenta
+│   ├── Navbar.css        # Stilovi za navigaciju
+│   ├── Navbar.js         # Navigaciona komponenta
+│   ├── PolicajacPanel.css # Stilovi za policajski panel
+│   ├── PolicajacPanel.js  # Policajski panel komponenta
+│   ├── Profile.css       # Stilovi za profil stranicu
+│   ├── Profile.js        # Profil komponenta
+│   ├── RegisterForm.js   # Registracija komponenta
+│   ├── ZahtevCard.css    # Stilovi za karticu zahteva
+│   └── ZahtevCard.js     # Karta za slanje zahteva
+├── context/
+│   └── AuthContext.js    # Context za upravljanje autentifikacijom
+├── pages/
+│   ├── Home.css          # Stilovi za home stranicu
+│   └── Home.js           # Home stranica
+├── App.js                # Glavna App komponenta
+└── index.js              # Entry point
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Autentifikacija
 
-## Learn More
+Aplikacija koristi JWT token za autentifikaciju. Token se automatski:
+- Dodaje u sve API zahteve
+- Čuva u localStorage
+- Briše pri logout-u ili isteku
+- Dekodira za prikaz korisničkih podataka
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Responsive Design
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Aplikacija je potpuno responzivna i optimizovana za:
+- Desktop računare
+- Tablete
+- Mobilne telefone
 
-### Code Splitting
+## Sigurnost
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Automatsko brisanje tokena pri 401 grešci
+- Validacija podataka na frontend-u
+- Sigurno čuvanje tokena u localStorage
+- CSRF zaštita kroz JWT token

@@ -1,0 +1,145 @@
+.zahtev-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    margin: 20px 0;
+    border: 1px solid #e1e5e9;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.zahtev-card-header {
+    text-align: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.zahtev-card-header h3 {
+    color: #2c3e50;
+    margin: 0 0 8px 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.zahtev-card-header p {
+    color: #7f8c8d;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.zahtev-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #34495e;
+    font-size: 0.9rem;
+}
+
+.form-group select,
+.form-group textarea {
+    padding: 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    font-family: inherit;
+}
+
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: block;
+}
+
+.form-group {
+  min-width: 0;
+}
+
+.zahtev-card {
+  overflow-x: hidden;
+}
+
+.submit-btn {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.submit-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #2980b9, #1f5f8b);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.submit-btn:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.error-message {
+    background: #fee;
+    color: #c0392b;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #fadbd8;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.success-message {
+    background: #d5f4e6;
+    color: #27ae60;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #a9dfbf;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .zahtev-card {
+        margin: 10px;
+        padding: 20px;
+    }
+    
+    .zahtev-card-header h3 {
+        font-size: 1.3rem;
+    }
+}
