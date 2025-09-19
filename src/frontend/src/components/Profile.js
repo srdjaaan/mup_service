@@ -171,6 +171,9 @@ const Profile = () => {
                           <div className="detail-row"><label>Prezime:</label><span>{doc.lastname}</span></div>
                           <div className="detail-row"><label>Datum kreiranja:</label><span>{formatDate(doc.createdAt)}</span></div>
                           <div className="detail-row"><label>Datum isteka:</label><span>{formatDate(doc.expiresAt)}</span></div>
+                          {doc.kategorije && (
+                            <div className="detail-row"><label>Kategorije:</label><span>{doc.kategorije}</span></div>
+                          )}
                           <div className="detail-row"><label>Status:</label><span className={`status-text ${status.isValid ? 'valid' : 'expired'}`}>{status.message}</span></div>
                         </div>
                       </div>
@@ -191,5 +194,51 @@ const Profile = () => {
     </div>
   );
 };
+
+  const getDocumentTypeDisplayName = (tipDokumenta) => {
+    switch (tipDokumenta) {
+      case 'LICNA_KARTA':
+        return 'Lična karta';
+      case 'PRODUZENJE_LICNE_KARTE':
+        return 'Produženje lične karte';
+      case 'PASOS':
+        return 'Pasoš';
+      case 'VOZACKA_DOZVOLA':
+        return 'Vozacka dozvola';
+      default:
+        return tipDokumenta;
+    }
+  };
+
+  const getRoleDisplayName = (role) => {
+    switch (role) {
+      case 'GRADJANIN':
+        return 'Građanin';
+      case 'POLICAJAC':
+        return 'Policajac';
+      default:
+        return role;
+    }
+  };
+
+  const getGenderDisplayName = (gender) => {
+    switch (gender) {
+      case 'MUSKI':
+        return 'Muški';
+      case 'ZENSKI':
+        return 'Ženski';
+      default:
+        return gender;
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      return new Date(dateString).toLocaleDateString('sr-RS');
+    } catch (error) {
+      return 'N/A';
+    }
+  };
 
 export default Profile;

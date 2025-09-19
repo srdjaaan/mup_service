@@ -151,9 +151,16 @@ const PolicajacPanel = ({ user }) => {
                                         {zahtev.tipDokumenta === 'LICNA_KARTA' && 'Lična karta'}
                                         {zahtev.tipDokumenta === 'PRODUZENJE_LICNE_KARTE' && 'Produženje lične karte'}
                                         {zahtev.tipDokumenta === 'PASOS' && 'Pasoš'}
-                                        {!['LICNA_KARTA', 'PRODUZENJE_LICNE_KARTE', 'PASOS'].includes(zahtev.tipDokumenta) && zahtev.tipDokumenta}
+                                        {zahtev.tipDokumenta === 'VOZACKA_DOZVOLA' && 'Vozacka dozvola'}
+                                        {!['LICNA_KARTA', 'PRODUZENJE_LICNE_KARTE', 'PASOS', 'VOZACKA_DOZVOLA'].includes(zahtev.tipDokumenta) && zahtev.tipDokumenta}
                                     </span>
                                 </div>
+                                {zahtev.kategorija && (
+                                    <div className="detail-row">
+                                        <strong>Kategorija:</strong>
+                                        <span>{zahtev.kategorija}</span>
+                                    </div>
+                                )}
                                 <div className="detail-row">
                                     <strong>Razlog:</strong>
                                     <span>{zahtev.razlog}</span>
@@ -206,7 +213,11 @@ const PolicajacPanel = ({ user }) => {
                                     selectedZahtev.tipDokumenta === 'LICNA_KARTA' && 'Lična karta'
                                 }{selectedZahtev.tipDokumenta === 'PRODUZENJE_LICNE_KARTE' && 'Produženje lične karte'}
                                 {selectedZahtev.tipDokumenta === 'PASOS' && 'Pasoš'}
-                                {!['LICNA_KARTA', 'PRODUZENJE_LICNE_KARTE', 'PASOS'].includes(selectedZahtev.tipDokumenta) && selectedZahtev.tipDokumenta}</p>
+                                {selectedZahtev.tipDokumenta === 'VOZACKA_DOZVOLA' && 'Vozacka dozvola'}
+                                {!['LICNA_KARTA', 'PRODUZENJE_LICNE_KARTE', 'PASOS', 'VOZACKA_DOZVOLA'].includes(selectedZahtev.tipDokumenta) && selectedZahtev.tipDokumenta}</p>
+                                {selectedZahtev.kategorija && (
+                                    <p><strong>Kategorija:</strong> {selectedZahtev.kategorija}</p>
+                                )}
                                 <p><strong>Razlog:</strong> {selectedZahtev.razlog}</p>
                             </div>
 

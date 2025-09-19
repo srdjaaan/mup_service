@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import ZahtevCard from '../components/ZahtevCard';
+import DodajKategoriju from '../components/DodajKategoriju';
 import PolicajacPanel from '../components/PolicajacPanel';
 import { useAuth } from '../context/AuthContext';
 import { mupApi } from '../api/mupApi';
@@ -54,6 +55,7 @@ const Home = () => {
                 {user?.role === 'GRADJANIN' && (
                     <div className="gradjanin-section">
                         <ZahtevCard user={user} onZahtevCreated={handleZahtevCreated} />
+                        <DodajKategoriju user={user} onKategorijaDodana={fetchZahtevi} />
                         
                         <div className="zahtevi-section">
                             <h2>Moji zahtevi</h2>
@@ -77,7 +79,11 @@ const Home = () => {
                                                     zahtev.tipDokumenta === 'LICNA_KARTA' && 'Lična karta'
                                                 }{zahtev.tipDokumenta === 'PRODUZENJE_LICNE_KARTE' && 'Produženje lične karte'}
                                                 {zahtev.tipDokumenta === 'PASOS' && 'Pasoš'}
-                                                {!['LICNA_KARTA', 'PRODUZENJE_LICNE_KARTE', 'PASOS'].includes(zahtev.tipDokumenta) && zahtev.tipDokumenta}</p>
+                                                {zahtev.tipDokumenta === 'VOZACKA_DOZVOLA' && 'Vozacka dozvola'}
+                                                {!['LICNA_KARTA', 'PRODUZENJE_LICNE_KARTE', 'PASOS', 'VOZACKA_DOZVOLA'].includes(zahtev.tipDokumenta) && zahtev.tipDokumenta}</p>
+                                                {zahtev.kategorija && (
+                                                    <p><strong>Kategorija:</strong> {zahtev.kategorija}</p>
+                                                )}
                                                 <p><strong>Razlog:</strong> {zahtev.razlog}</p>
                                                 <p><strong>Datum kreiranja:</strong> {new Date(zahtev.datumKreiranja).toLocaleDateString('sr-RS')}</p>
                                                 {zahtev.komentar && (

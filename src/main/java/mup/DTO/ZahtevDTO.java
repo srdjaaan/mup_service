@@ -2,6 +2,7 @@ package mup.DTO;
 
 import mup.model.StatusZahteva;
 import mup.model.TipDokumenta;
+import mup.model.Kategorija;
 import java.time.LocalDateTime;
 
 public class ZahtevDTO {
@@ -15,6 +16,7 @@ public class ZahtevDTO {
     private String policajacPrezime;
     private StatusZahteva status;
     private TipDokumenta tipDokumenta;
+    private Kategorija kategorija; // Za vozacke dozvole
     private String razlog;
     private String komentar;
     private LocalDateTime datumKreiranja;
@@ -125,6 +127,14 @@ public class ZahtevDTO {
     
     public void setDatumOdobrenja(LocalDateTime datumOdobrenja) {
         this.datumOdobrenja = datumOdobrenja;
+    }
+    
+    public Kategorija getKategorija() {
+        return kategorija;
+    }
+    
+    public void setKategorija(Kategorija kategorija) {
+        this.kategorija = kategorija;
     }
 }
 

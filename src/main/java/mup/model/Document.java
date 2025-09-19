@@ -22,6 +22,9 @@ public class Document {
     
     @Transient
     private String brojDokumenta;
+    
+    @Transient
+    private String kategorije;
 
     @Column(name = "user_jmbg")
     private String userJmbg;
@@ -100,5 +103,13 @@ public class Document {
     
     public void setBrojDokumenta(String brojDokumenta) {
         this.brojDokumenta = brojDokumenta;
+    }
+    
+    public String getKategorije() {
+        return kategorije;
+    }
+    
+    public void setKategorije(String kategorije) {
+        this.kategorije = kategorije;
     }
 }

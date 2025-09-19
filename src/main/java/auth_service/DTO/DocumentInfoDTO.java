@@ -13,6 +13,7 @@ public class DocumentInfoDTO {
     private LocalDate expiresAt;
     private String tipDokumenta;
     private String brojDokumenta;
+    private String kategorije;
     
     public DocumentInfoDTO() {}
     
@@ -39,6 +40,21 @@ public class DocumentInfoDTO {
         this.expiresAt = expiresAt;
         this.tipDokumenta = tipDokumenta;
         this.brojDokumenta = brojDokumenta;
+    }
+    
+    public DocumentInfoDTO(Long id, String name, String lastname, LocalDate birthday, 
+                          String placeOfBirth, LocalDate createdAt, LocalDate expiresAt,
+                          String tipDokumenta, String brojDokumenta, String kategorije) {
+        this.id = id;
+        this.name = name;
+        this.lastname = lastname;
+        this.birthday = birthday;
+        this.placeOfBirth = placeOfBirth;
+        this.createdAt = createdAt;
+        this.expiresAt = expiresAt;
+        this.tipDokumenta = tipDokumenta;
+        this.brojDokumenta = brojDokumenta;
+        this.kategorije = kategorije;
     }
     
     // Getters i Setters
@@ -112,6 +128,14 @@ public class DocumentInfoDTO {
     
     public void setBrojDokumenta(String brojDokumenta) {
         this.brojDokumenta = brojDokumenta;
+    }
+    
+    public String getKategorije() {
+        return kategorije;
+    }
+    
+    public void setKategorije(String kategorije) {
+        this.kategorije = kategorije;
     }
 }
 

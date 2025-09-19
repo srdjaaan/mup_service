@@ -139,7 +139,8 @@ public class UserService {
                 document.getCreatedAt(),
                 document.getExpiresAt(),
                 document.getTipDokumenta(),
-                document.getBrojDokumenta()
+                document.getBrojDokumenta(),
+                document.getKategorije()
         );
     }
 

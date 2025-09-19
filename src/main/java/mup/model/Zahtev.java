@@ -27,6 +27,10 @@ public class Zahtev {
     @Column(nullable = false)
     private TipDokumenta tipDokumenta;
     
+    @Enumerated(EnumType.STRING)
+    @Column
+    private Kategorija kategorija; // Za vozacke dozvole
+    
     @Column(nullable = false)
     private String razlog;
     
@@ -50,6 +54,14 @@ public class Zahtev {
         this.gradjaninJmbg = gradjaninJmbg;
         this.tipDokumenta = tipDokumenta;
         this.razlog = razlog;
+    }
+    
+    public Zahtev(String gradjaninJmbg, TipDokumenta tipDokumenta, String razlog, Kategorija kategorija) {
+        this();
+        this.gradjaninJmbg = gradjaninJmbg;
+        this.tipDokumenta = tipDokumenta;
+        this.razlog = razlog;
+        this.kategorija = kategorija;
     }
     
     // Getters i Setters
@@ -123,6 +135,14 @@ public class Zahtev {
     
     public void setDatumOdobrenja(LocalDateTime datumOdobrenja) {
         this.datumOdobrenja = datumOdobrenja;
+    }
+    
+    public Kategorija getKategorija() {
+        return kategorija;
+    }
+    
+    public void setKategorija(Kategorija kategorija) {
+        this.kategorija = kategorija;
     }
 }
 

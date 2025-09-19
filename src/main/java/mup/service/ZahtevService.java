@@ -3,10 +3,12 @@ package mup.service;
 import mup.DTO.KreiranjeZahtevaDTO;
 import mup.DTO.OdobravanjeZahtevaDTO;
 import mup.DTO.ZahtevDTO;
+import mup.DTO.DodavanjeKategorijeDTO;
 import mup.model.*;
 import mup.repository.ZahtevRepository;
 import mup.repository.LicnaKartaRepository;
 import mup.repository.PasosRepository;
+import mup.repository.VozackaDozvolaRepository;
 import mup.repository.NotificationRepository; // DODATO
 import auth_service.model.User;
 import auth_service.model.Role;
@@ -36,6 +38,9 @@ public class ZahtevService {
     private PasosRepository pasosRepository;
 
     @Autowired
+    private VozackaDozvolaRepository vozackaDozvolaRepository;
+
+    @Autowired
     private NotificationRepository notificationRepository; // VEĆ POSTOJI U TVOM KODU, OSTAVLJENO
 
     @Autowired
@@ -53,10 +58,12 @@ public class ZahtevService {
             throw new RuntimeException("Samo građani mogu kreirati zahteve");
         }
 
-        // Proveri starost korisnika
-        String validacijaStarosti = validirajStarost(jmbg, kreiranjeZahtevaDTO.getTipDokumenta());
-        if (validacijaStarosti != null) {
-            throw new RuntimeException(validacijaStarosti);
+        // Proveri starost korisnika (osim za vozacku dozvolu - validacija se izvršava tek pri odobravanju)
+        if (kreiranjeZahtevaDTO.getTipDokumenta() != TipDokumenta.VOZACKA_DOZVOLA) {
+            String validacijaStarosti = validirajStarost(jmbg, kreiranjeZahtevaDTO.getTipDokumenta());
+            if (validacijaStarosti != null) {
+                throw new RuntimeException(validacijaStarosti);
+            }
         }
 
         // Proveri da li lična karta već postoji
@@ -103,7 +110,44 @@ public class ZahtevService {
             }
         }
 
-        Zahtev zahtev = new Zahtev(gradjanin.getJmbg(), kreiranjeZahtevaDTO.getTipDokumenta(), kreiranjeZahtevaDTO.getRazlog());
+        // Proveri da li je zahtev za kreiranje vozacke dozvole
+        if (kreiranjeZahtevaDTO.getTipDokumenta() == TipDokumenta.VOZACKA_DOZVOLA) {
+            // Proveri da li je kategorija odabrana
+            if (kreiranjeZahtevaDTO.getKategorija() == null) {
+                throw new RuntimeException("Morate odabrati kategoriju za vozacku dozvolu");
+            }
+
+            // Proveri da li korisnik ima ličnu kartu
+            if (!licnaKartaRepository.existsByJmbg(jmbg)) {
+                throw new RuntimeException("Morate imati ličnu kartu da bi kreirali vozacku dozvolu");
+            }
+
+            // Proveri da li je lična karta validna
+            String validacijskaPoruka = validirajLicnuKartu(jmbg);
+            if (validacijskaPoruka != null) {
+                throw new RuntimeException("Morate imati validnu ličnu kartu da bi kreirali vozacku dozvolu");
+            }
+
+            // Proveri da li vozacka dozvola već postoji
+            if (vozackaDozvolaRepository.existsByDocumentUserJmbg(jmbg)) {
+                // Proveri da li korisnik već ima tu kategoriju
+                List<VozackaDozvola> postojeceVozackeDozvole = vozackaDozvolaRepository.findByDocumentUserJmbg(jmbg);
+                VozackaDozvola najnovijaVozackaDozvola = postojeceVozackeDozvole.stream()
+                        .max((v1, v2) -> v1.getDocument().getCreatedAt().compareTo(v2.getDocument().getCreatedAt()))
+                        .orElse(null);
+                
+                if (najnovijaVozackaDozvola != null && najnovijaVozackaDozvola.imaKategoriju(kreiranjeZahtevaDTO.getKategorija())) {
+                    throw new RuntimeException("Već imate " + kreiranjeZahtevaDTO.getKategorija() + " kategoriju na svojoj vozackoj dozvoli. Ne možete dodati istu kategoriju ponovo.");
+                }
+            }
+        }
+
+        Zahtev zahtev;
+        if (kreiranjeZahtevaDTO.getTipDokumenta() == TipDokumenta.VOZACKA_DOZVOLA) {
+            zahtev = new Zahtev(gradjanin.getJmbg(), kreiranjeZahtevaDTO.getTipDokumenta(), kreiranjeZahtevaDTO.getRazlog(), kreiranjeZahtevaDTO.getKategorija());
+        } else {
+            zahtev = new Zahtev(gradjanin.getJmbg(), kreiranjeZahtevaDTO.getTipDokumenta(), kreiranjeZahtevaDTO.getRazlog());
+        }
         zahtev = zahtevRepository.save(zahtev);
 
         return convertToDTO(zahtev);
@@ -167,6 +211,25 @@ public class ZahtevService {
                         NotificationType.ZAHTEV_ODOBREN,
                         zahtev.getId()
                 );
+            } else if (zahtev.getTipDokumenta() == TipDokumenta.VOZACKA_DOZVOLA) {
+                // Proveri da li je kreiranje nove vozacke dozvole ili dodavanje kategorije
+                boolean jeNovaVozackaDozvola = !vozackaDozvolaRepository.existsByDocumentUserJmbg(zahtev.getGradjaninJmbg());
+                
+                kreirajVozackuDozvolu(zahtev);
+                
+                // DODATO: obaveštenje
+                String naslov = jeNovaVozackaDozvola ? "Zahtev za vozacku dozvolu je odobren" : "Zahtev za dodavanje kategorije je odobren";
+                String poruka = jeNovaVozackaDozvola ? 
+                    "Vaš zahtev za kreiranje vozacke dozvole je uspešno odobren." :
+                    "Vaš zahtev za dodavanje kategorije " + zahtev.getKategorija() + " je uspešno odobren.";
+                
+                kreirajObavestenje(
+                        zahtev.getGradjaninJmbg(),
+                        naslov,
+                        poruka + (odobravanjeDTO.getKomentar() != null ? " Komentar: " + odobravanjeDTO.getKomentar() : ""),
+                        NotificationType.ZAHTEV_ODOBREN,
+                        zahtev.getId()
+                );
             }
         } else if (odobravanjeDTO.getStatus() == StatusZahteva.ODBIJEN) {
             // DODATO: obaveštenje za odbijeni zahtev
@@ -177,6 +240,10 @@ public class ZahtevService {
                 tipDokumentaStr = "produženje lične karte";
             } else if (zahtev.getTipDokumenta() == TipDokumenta.PASOS) {
                 tipDokumentaStr = "pasoš";
+            } else if (zahtev.getTipDokumenta() == TipDokumenta.VOZACKA_DOZVOLA) {
+                // Proveri da li je kreiranje nove vozacke dozvole ili dodavanje kategorije
+                boolean jeNovaVozackaDozvola = !vozackaDozvolaRepository.existsByDocumentUserJmbg(zahtev.getGradjaninJmbg());
+                tipDokumentaStr = jeNovaVozackaDozvola ? "vozacku dozvolu" : "dodavanje kategorije " + zahtev.getKategorija();
             }
 
             kreirajObavestenje(
@@ -276,6 +343,91 @@ public class ZahtevService {
         }
     }
 
+    private void kreirajVozackuDozvolu(Zahtev zahtev) {
+        if (zahtev.getTipDokumenta() == TipDokumenta.VOZACKA_DOZVOLA) {
+            User gradjanin = authServiceClient.getUserByJmbg(zahtev.getGradjaninJmbg());
+
+            if (gradjanin == null) {
+                throw new RuntimeException("Korisnik sa JMBG-om " + zahtev.getGradjaninJmbg() + " nije pronađen");
+            }
+
+            // Proveri da li korisnik već ima vozacku dozvolu
+            if (vozackaDozvolaRepository.existsByDocumentUserJmbg(zahtev.getGradjaninJmbg())) {
+                // Dodaj kategoriju na postojeću vozacku dozvolu
+                dodajKategorijuNaPostojecuVozackuDozvolu(zahtev);
+            } else {
+                // Kreiraj novu vozacku dozvolu
+                kreirajNovuVozackuDozvolu(zahtev, gradjanin);
+            }
+        }
+    }
+
+    private void kreirajNovuVozackuDozvolu(Zahtev zahtev, User gradjanin) {
+        // Proveri starost za kategoriju
+        String validacijaStarosti = validirajStarostZaKategoriju(zahtev.getGradjaninJmbg(), zahtev.getKategorija());
+        if (validacijaStarosti != null) {
+            throw new RuntimeException(validacijaStarosti);
+        }
+        
+        // Kreiraj Document
+        Document document = new Document();
+        document.setName(gradjanin.getName());
+        document.setLastname(gradjanin.getLastname());
+        document.setBirthday(gradjanin.getBirthday());
+        document.setPlaceOfBirth(gradjanin.getPlaceOfBirth());
+        document.setUserJmbg(gradjanin.getJmbg());
+        document.setCreatedAt(LocalDateTime.now().toLocalDate());
+        document.setExpiresAt(LocalDateTime.now().plusYears(10).toLocalDate());
+
+        // Kreiraj Vozacku Dozvolu sa odabranom kategorijom
+        VozackaDozvola vozackaDozvola = new VozackaDozvola();
+        vozackaDozvola.setDocument(document);
+        
+        // Dodaj odabranu kategoriju iz zahteva
+        if (zahtev.getKategorija() != null) {
+            vozackaDozvola.dodajKategoriju(zahtev.getKategorija());
+        } else {
+            throw new RuntimeException("Kategorija nije odabrana za vozacku dozvolu");
+        }
+
+        vozackaDozvolaRepository.save(vozackaDozvola);
+    }
+
+    private void dodajKategorijuNaPostojecuVozackuDozvolu(Zahtev zahtev) {
+        // Pronađi najnoviju vozacku dozvolu
+        List<VozackaDozvola> vozackeDozvole = vozackaDozvolaRepository.findByDocumentUserJmbg(zahtev.getGradjaninJmbg());
+        VozackaDozvola najnovijaVozackaDozvola = vozackeDozvole.stream()
+                .max((v1, v2) -> v1.getDocument().getCreatedAt().compareTo(v2.getDocument().getCreatedAt()))
+                .orElse(null);
+
+        if (najnovijaVozackaDozvola == null) {
+            throw new RuntimeException("Korisnik nema vozacku dozvolu");
+        }
+
+        // Proveri da li vozacka dozvola nije istekla
+        LocalDate danas = LocalDate.now();
+        LocalDate datumIsteka = najnovijaVozackaDozvola.getDocument().getExpiresAt();
+
+        if (danas.isAfter(datumIsteka)) {
+            throw new RuntimeException("Vozacka dozvola je istekla. Morate prvo kreirati novu vozacku dozvolu.");
+        }
+
+        // Proveri da li korisnik već ima tu kategoriju
+        if (najnovijaVozackaDozvola.imaKategoriju(zahtev.getKategorija())) {
+            throw new RuntimeException("Korisnik već ima " + zahtev.getKategorija() + " kategoriju na svojoj vozackoj dozvoli.");
+        }
+
+        // Proveri starost za novu kategoriju
+        String validacijaStarosti = validirajStarostZaKategoriju(zahtev.getGradjaninJmbg(), zahtev.getKategorija());
+        if (validacijaStarosti != null) {
+            throw new RuntimeException(validacijaStarosti);
+        }
+
+        // Dodaj kategoriju
+        najnovijaVozackaDozvola.dodajKategoriju(zahtev.getKategorija());
+        vozackaDozvolaRepository.save(najnovijaVozackaDozvola);
+    }
+
     private String generisiBrojLicneKarte() {
         // Generiši jedinstveni broj lične karte sa 5 cifara
         Random random = new Random();
@@ -342,6 +494,32 @@ public class ZahtevService {
         return null; // Pasoš je validan
     }
 
+    public String validirajVozackuDozvolu(String jmbg) {
+        List<VozackaDozvola> vozackeDozvole = vozackaDozvolaRepository.findByDocumentUserJmbg(jmbg);
+
+        if (vozackeDozvole.isEmpty()) {
+            return "Korisnik nema vozacku dozvolu";
+        }
+
+        // Pronađi najnoviju vozacku dozvolu
+        VozackaDozvola najnovijaVozackaDozvola = vozackeDozvole.stream()
+                .max((v1, v2) -> v1.getDocument().getCreatedAt().compareTo(v2.getDocument().getCreatedAt()))
+                .orElse(null);
+
+        if (najnovijaVozackaDozvola == null) {
+            return "Korisnik nema vozacku dozvolu";
+        }
+
+        LocalDate danas = LocalDate.now();
+        LocalDate datumIsteka = najnovijaVozackaDozvola.getDocument().getExpiresAt();
+
+        if (danas.isAfter(datumIsteka)) {
+            return "Vozacka dozvola je istekla. Morate poslati zahtev da kreirate novu vozacku dozvolu.";
+        }
+
+        return null; // Vozacka dozvola je validna
+    }
+
     public String validirajStarost(String jmbg, String tipDokumentaStr) {
         TipDokumenta tipDokumenta;
         try {
@@ -382,6 +560,22 @@ public class ZahtevService {
         if (tipDokumenta == TipDokumenta.PRODUZENJE_LICNE_KARTE) {
             if (godine < 10) {
                 return "Morate imati najmanje 10 godina da biste produžili ličnu kartu. Trenutno imate " + godine + " godina.";
+            }
+        }
+
+        // Validacija za vozacku dozvolu - različite starosti za različite kategorije
+        if (tipDokumenta == TipDokumenta.VOZACKA_DOZVOLA) {
+            // Za A kategoriju - minimum 16 godina
+            if (godine < 16) {
+                return "Morate imati najmanje 16 godina da biste kreirali vozacku dozvolu za A kategoriju. Trenutno imate " + godine + " godina.";
+            }
+            // Za B kategoriju - minimum 18 godina
+            if (godine < 18) {
+                return "Morate imati najmanje 18 godina da biste kreirali vozacku dozvolu za B kategoriju. Trenutno imate " + godine + " godina.";
+            }
+            // Za C i D kategorije - minimum 21 godina
+            if (godine < 21) {
+                return "Morate imati najmanje 21 godinu da biste kreirali vozacku dozvolu za C i D kategorije. Trenutno imate " + godine + " godina.";
             }
         }
 
@@ -487,8 +681,25 @@ public class ZahtevService {
                 })
                 .collect(Collectors.toList());
 
+        // Dodaj vozacke dozvole
+        List<Document> vozackeDozvole = vozackaDozvolaRepository.findByDocumentUserJmbg(jmbg).stream()
+                .map(vozackaDozvola -> {
+                    Document doc = vozackaDozvola.getDocument();
+                    // Dodaj dodatne podatke o vozackoj dozvoli
+                    doc.setTipDokumenta("VOZACKA_DOZVOLA");
+                    doc.setBrojDokumenta("VD" + vozackaDozvola.getId());
+                    // Dodaj kategorije kao string
+                    String kategorijeStr = vozackaDozvola.getKategorije().stream()
+                            .map(Enum::name)
+                            .collect(Collectors.joining(", "));
+                    doc.setKategorije(kategorijeStr);
+                    return doc;
+                })
+                .collect(Collectors.toList());
+
         dokumenti.addAll(licneKarte);
         dokumenti.addAll(pasosi);
+        dokumenti.addAll(vozackeDozvole);
 
         return dokumenti;
     }
@@ -518,6 +729,7 @@ public class ZahtevService {
 
         dto.setStatus(zahtev.getStatus());
         dto.setTipDokumenta(zahtev.getTipDokumenta());
+        dto.setKategorija(zahtev.getKategorija());
         dto.setRazlog(zahtev.getRazlog());
         dto.setKomentar(zahtev.getKomentar());
         dto.setDatumKreiranja(zahtev.getDatumKreiranja());
@@ -545,5 +757,90 @@ public class ZahtevService {
 
     public void oznaciSveKaoProcitane(String jmbg) {
         notificationRepository.markAllAsReadByUserJmbg(jmbg);
+    }
+
+    public void dodajKategorijuNaVozackuDozvolu(String jmbg, DodavanjeKategorijeDTO dodavanjeKategorijeDTO) {
+        // Proveri da li korisnik ima vozacku dozvolu
+        List<VozackaDozvola> vozackeDozvole = vozackaDozvolaRepository.findByDocumentUserJmbg(jmbg);
+        
+        if (vozackeDozvole.isEmpty()) {
+            throw new RuntimeException("Korisnik nema vozacku dozvolu. Morate prvo kreirati vozacku dozvolu.");
+        }
+
+        // Pronađi najnoviju vozacku dozvolu
+        VozackaDozvola najnovijaVozackaDozvola = vozackeDozvole.stream()
+                .max((v1, v2) -> v1.getDocument().getCreatedAt().compareTo(v2.getDocument().getCreatedAt()))
+                .orElse(null);
+
+        if (najnovijaVozackaDozvola == null) {
+            throw new RuntimeException("Korisnik nema vozacku dozvolu");
+        }
+
+        // Proveri da li vozacka dozvola nije istekla
+        LocalDate danas = LocalDate.now();
+        LocalDate datumIsteka = najnovijaVozackaDozvola.getDocument().getExpiresAt();
+
+        if (danas.isAfter(datumIsteka)) {
+            throw new RuntimeException("Vozacka dozvola je istekla. Morate prvo kreirati novu vozacku dozvolu.");
+        }
+
+        // Proveri da li korisnik već ima tu kategoriju
+        if (najnovijaVozackaDozvola.imaKategoriju(dodavanjeKategorijeDTO.getKategorija())) {
+            throw new RuntimeException("Korisnik već ima " + dodavanjeKategorijeDTO.getKategorija() + " kategoriju na svojoj vozackoj dozvoli.");
+        }
+
+        // Proveri starost za novu kategoriju
+        String validacijaStarosti = validirajStarostZaKategoriju(jmbg, dodavanjeKategorijeDTO.getKategorija());
+        if (validacijaStarosti != null) {
+            throw new RuntimeException(validacijaStarosti);
+        }
+
+        // Dodaj kategoriju
+        najnovijaVozackaDozvola.dodajKategoriju(dodavanjeKategorijeDTO.getKategorija());
+        vozackaDozvolaRepository.save(najnovijaVozackaDozvola);
+
+        // Kreiraj obaveštenje
+        kreirajObavestenje(
+                jmbg,
+                "Kategorija je dodana na vozacku dozvolu",
+                "Kategorija " + dodavanjeKategorijeDTO.getKategorija() + " je uspešno dodana na vašu vozacku dozvolu. " +
+                        (dodavanjeKategorijeDTO.getRazlog() != null ? "Razlog: " + dodavanjeKategorijeDTO.getRazlog() : ""),
+                NotificationType.ZAHTEV_ODOBREN,
+                null
+        );
+    }
+
+    private String validirajStarostZaKategoriju(String jmbg, Kategorija kategorija) {
+        User gradjanin = authServiceClient.getUserByJmbg(jmbg);
+
+        if (gradjanin == null) {
+            return "Korisnik nije pronađen";
+        }
+
+        LocalDate danas = LocalDate.now();
+        LocalDate datumRodjenja = gradjanin.getBirthday();
+
+        if (datumRodjenja == null) {
+            return "Datum rođenja nije definisan";
+        }
+
+        int godine = Period.between(datumRodjenja, danas).getYears();
+
+        // Validacija za A kategoriju - minimum 16 godina
+        if (kategorija == Kategorija.A && godine < 16) {
+            return "Morate imati najmanje 16 godina da biste dodali A kategoriju. Trenutno imate " + godine + " godina.";
+        }
+
+        // Validacija za B kategoriju - minimum 18 godina
+        if (kategorija == Kategorija.B && godine < 18) {
+            return "Morate imati najmanje 18 godina da biste dodali B kategoriju. Trenutno imate " + godine + " godina.";
+        }
+
+        // Validacija za C i D kategorije - minimum 21 godina
+        if ((kategorija == Kategorija.C || kategorija == Kategorija.D) && godine < 21) {
+            return "Morate imati najmanje 21 godinu da biste dodali " + kategorija + " kategoriju. Trenutno imate " + godine + " godina.";
+        }
+
+        return null; // Starost je validna
     }
 }

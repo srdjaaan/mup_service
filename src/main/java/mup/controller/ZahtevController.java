@@ -3,6 +3,7 @@ package mup.controller;
 import mup.DTO.KreiranjeZahtevaDTO;
 import mup.DTO.OdobravanjeZahtevaDTO;
 import mup.DTO.ZahtevDTO;
+import mup.DTO.DodavanjeKategorijeDTO;
 import mup.model.Document;
 import mup.model.Notification;
 import mup.service.ZahtevService;
@@ -269,6 +270,35 @@ public class ZahtevController {
         }
     }
 
+    @GetMapping("/korisnik/{jmbg}/validiraj-vozacku-dozvolu")
+    public ResponseEntity<?> validirajVozackuDozvolu(@PathVariable String jmbg, HttpServletRequest request) {
+        try {
+            String token = extractTokenFromRequest(request);
+            if (token == null || !jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nevažeći token");
+            }
+
+            // Proveri da li korisnik traži svoje dokumente ili je policajac
+            String tokenJmbg = jwtUtil.getJmbgFromToken(token);
+            String role = jwtUtil.getRoleFromToken(token);
+
+            if (!jmbg.equals(tokenJmbg) && !"POLICAJAC".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Možete videti samo svoje dokumente");
+            }
+
+            String validacijskaPoruka = zahtevService.validirajVozackuDozvolu(jmbg);
+
+            if (validacijskaPoruka == null) {
+                return ResponseEntity.ok(Map.of("status", "VALIDNA", "poruka", "Vozacka dozvola je validna"));
+            } else {
+                return ResponseEntity.ok(Map.of("status", "NEVALIDNA", "poruka", validacijskaPoruka));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
     // Notification endpoints
     @GetMapping("/korisnik/{jmbg}/obavestenja")
     public ResponseEntity<?> getObavestenja(@PathVariable String jmbg, HttpServletRequest request) {
@@ -372,6 +402,33 @@ public class ZahtevController {
 
             zahtevService.oznaciSveKaoProcitane(jmbg);
             return ResponseEntity.ok(Map.of("poruka", "Sva obaveštenja su označena kao pročitana"));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/korisnik/{jmbg}/dodaj-kategoriju")
+    public ResponseEntity<?> dodajKategoriju(@PathVariable String jmbg, @RequestBody DodavanjeKategorijeDTO dodavanjeKategorijeDTO, HttpServletRequest request) {
+        try {
+            String token = extractTokenFromRequest(request);
+            if (token == null || !jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nevažeći token");
+            }
+
+            String tokenJmbg = jwtUtil.getJmbgFromToken(token);
+            String role = jwtUtil.getRoleFromToken(token);
+
+            if (!jmbg.equals(tokenJmbg) && !"POLICAJAC".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Možete dodati kategoriju samo na svoju vozacku dozvolu");
+            }
+
+            if (!"GRADJANIN".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Samo građani mogu dodavati kategorije");
+            }
+
+            zahtevService.dodajKategorijuNaVozackuDozvolu(jmbg, dodavanjeKategorijeDTO);
+            return ResponseEntity.ok(Map.of("poruka", "Kategorija je uspešno dodana na vozacku dozvolu"));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

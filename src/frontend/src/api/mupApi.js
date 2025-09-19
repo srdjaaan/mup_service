@@ -100,6 +100,15 @@ export const mupApi = {
     // Dohvatanje dokumenata korisnika
     getDokumentiKorisnika: (jmbg) => {
         return mupInstance.get(`/api/zahtevi/korisnik/${jmbg}/dokumenti`);
+    },
+
+    // Vozacke dozvole
+    validirajVozackuDozvolu: (jmbg) => {
+        return mupInstance.get(`/api/zahtevi/korisnik/${jmbg}/validiraj-vozacku-dozvolu`);
+    },
+
+    dodajKategoriju: (jmbg, kategorijaData) => {
+        return mupInstance.post(`/api/zahtevi/korisnik/${jmbg}/dodaj-kategoriju`, kategorijaData);
     }
 };
 
