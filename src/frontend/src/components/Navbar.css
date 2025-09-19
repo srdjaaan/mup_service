@@ -29,6 +29,12 @@
     gap: 20px;
 }
 
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
 .nav-link {
     color: white;
     text-decoration: none;

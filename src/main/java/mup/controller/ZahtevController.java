@@ -4,6 +4,7 @@ import mup.DTO.KreiranjeZahtevaDTO;
 import mup.DTO.OdobravanjeZahtevaDTO;
 import mup.DTO.ZahtevDTO;
 import mup.model.Document;
+import mup.model.Notification;
 import mup.service.ZahtevService;
 import mup.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -233,6 +234,144 @@ public class ZahtevController {
             } else {
                 return ResponseEntity.ok(Map.of("status", "NEVALIDAN", "poruka", validacijskaPoruka));
             }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/korisnik/{jmbg}/validiraj-starost/{tipDokumenta}")
+    public ResponseEntity<?> validirajStarost(@PathVariable String jmbg, @PathVariable String tipDokumenta, HttpServletRequest request) {
+        try {
+            String token = extractTokenFromRequest(request);
+            if (token == null || !jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nevažeći token");
+            }
+
+            // Proveri da li korisnik traži svoje dokumente ili je policajac
+            String tokenJmbg = jwtUtil.getJmbgFromToken(token);
+            String role = jwtUtil.getRoleFromToken(token);
+
+            if (!jmbg.equals(tokenJmbg) && !"POLICAJAC".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Možete videti samo svoje dokumente");
+            }
+
+            String validacijskaPoruka = zahtevService.validirajStarost(jmbg, tipDokumenta);
+            
+            if (validacijskaPoruka == null) {
+                return ResponseEntity.ok(Map.of("status", "VALIDNA", "poruka", "Starost je validna za kreiranje dokumenta"));
+            } else {
+                return ResponseEntity.ok(Map.of("status", "NEVALIDNA", "poruka", validacijskaPoruka));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // Notification endpoints
+    @GetMapping("/korisnik/{jmbg}/obavestenja")
+    public ResponseEntity<?> getObavestenja(@PathVariable String jmbg, HttpServletRequest request) {
+        try {
+            String token = extractTokenFromRequest(request);
+            if (token == null || !jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nevažeći token");
+            }
+
+            String tokenJmbg = jwtUtil.getJmbgFromToken(token);
+            String role = jwtUtil.getRoleFromToken(token);
+
+            if (!jmbg.equals(tokenJmbg) && !"POLICAJAC".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Možete videti samo svoja obaveštenja");
+            }
+
+            List<Notification> obavestenja = zahtevService.getObavestenjaZaKorisnika(jmbg);
+            return ResponseEntity.ok(obavestenja);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/korisnik/{jmbg}/obavestenja/neprocitana")
+    public ResponseEntity<?> getNeprocitanaObavestenja(@PathVariable String jmbg, HttpServletRequest request) {
+        try {
+            String token = extractTokenFromRequest(request);
+            if (token == null || !jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nevažeći token");
+            }
+
+            String tokenJmbg = jwtUtil.getJmbgFromToken(token);
+            String role = jwtUtil.getRoleFromToken(token);
+
+            if (!jmbg.equals(tokenJmbg) && !"POLICAJAC".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Možete videti samo svoja obaveštenja");
+            }
+
+            List<Notification> obavestenja = zahtevService.getNeprocitanaObavestenja(jmbg);
+            return ResponseEntity.ok(obavestenja);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/korisnik/{jmbg}/obavestenja/broj-neprocitanih")
+    public ResponseEntity<?> getBrojNeprocitanihObavestenja(@PathVariable String jmbg, HttpServletRequest request) {
+        try {
+            String token = extractTokenFromRequest(request);
+            if (token == null || !jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nevažeći token");
+            }
+
+            String tokenJmbg = jwtUtil.getJmbgFromToken(token);
+            String role = jwtUtil.getRoleFromToken(token);
+
+            if (!jmbg.equals(tokenJmbg) && !"POLICAJAC".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Možete videti samo svoja obaveštenja");
+            }
+
+            long broj = zahtevService.getBrojNeprocitanihObavestenja(jmbg);
+            return ResponseEntity.ok(Map.of("brojNeprocitanih", broj));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/obavestenja/{notificationId}/oznaci-procitanu")
+    public ResponseEntity<?> oznaciKaoProcitanu(@PathVariable Long notificationId, HttpServletRequest request) {
+        try {
+            String token = extractTokenFromRequest(request);
+            if (token == null || !jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nevažeći token");
+            }
+
+            zahtevService.oznaciKaoProcitanu(notificationId);
+            return ResponseEntity.ok(Map.of("poruka", "Obaveštenje je označeno kao pročitano"));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/korisnik/{jmbg}/obavestenja/oznaci-sve-procitane")
+    public ResponseEntity<?> oznaciSveKaoProcitane(@PathVariable String jmbg, HttpServletRequest request) {
+        try {
+            String token = extractTokenFromRequest(request);
+            if (token == null || !jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nevažeći token");
+            }
+
+            String tokenJmbg = jwtUtil.getJmbgFromToken(token);
+            String role = jwtUtil.getRoleFromToken(token);
+
+            if (!jmbg.equals(tokenJmbg) && !"POLICAJAC".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Možete označiti samo svoja obaveštenja");
+            }
+
+            zahtevService.oznaciSveKaoProcitane(jmbg);
+            return ResponseEntity.ok(Map.of("poruka", "Sva obaveštenja su označena kao pročitana"));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

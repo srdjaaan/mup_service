@@ -148,7 +148,12 @@ const PolicajacPanel = ({ user }) => {
                                 </div>
                                 <div className="detail-row">
                                     <strong>Tip dokumenta:</strong>
-                                    <span>{zahtev.tipDokumenta}</span>
+                                    <span className="document-type">
+                                        {zahtev.tipDokumenta === 'LICNA_KARTA' && 'Lična karta'}
+                                        {zahtev.tipDokumenta === 'PRODUZENJE_LICNE_KARTE' && 'Produženje lične karte'}
+                                        {zahtev.tipDokumenta === 'PASOS' && 'Pasoš'}
+                                        {!['LICNA_KARTA', 'PRODUZENJE_LICNE_KARTE', 'PASOS'].includes(zahtev.tipDokumenta) && zahtev.tipDokumenta}
+                                    </span>
                                 </div>
                                 <div className="detail-row">
                                     <strong>Razlog:</strong>
@@ -198,7 +203,11 @@ const PolicajacPanel = ({ user }) => {
                             <div className="zahtev-summary">
                                 <h4>Detalji zahteva:</h4>
                                 <p><strong>Građanin:</strong> {selectedZahtev.gradjaninIme} {selectedZahtev.gradjaninPrezime}</p>
-                                <p><strong>Tip dokumenta:</strong> {selectedZahtev.tipDokumenta}</p>
+                                <p><strong>Tip dokumenta:</strong> {
+                                    selectedZahtev.tipDokumenta === 'LICNA_KARTA' && 'Lična karta'
+                                }{selectedZahtev.tipDokumenta === 'PRODUZENJE_LICNE_KARTE' && 'Produženje lične karte'}
+                                {selectedZahtev.tipDokumenta === 'PASOS' && 'Pasoš'}
+                                {!['LICNA_KARTA', 'PRODUZENJE_LICNE_KARTE', 'PASOS'].includes(selectedZahtev.tipDokumenta) && selectedZahtev.tipDokumenta}</p>
                                 <p><strong>Razlog:</strong> {selectedZahtev.razlog}</p>
                             </div>
 

@@ -7,6 +7,7 @@ import mup.model.*;
 import mup.repository.ZahtevRepository;
 import mup.repository.LicnaKartaRepository;
 import mup.repository.PasosRepository;
+import mup.repository.NotificationRepository;
 import auth_service.model.User;
 import auth_service.model.Role;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -34,6 +36,9 @@ public class ZahtevService {
     private PasosRepository pasosRepository;
     
     @Autowired
+    private NotificationRepository notificationRepository;
+    
+    @Autowired
     private AuthServiceClient authServiceClient;
     
     public ZahtevDTO kreirajZahtev(String jmbg, KreiranjeZahtevaDTO kreiranjeZahtevaDTO) {
@@ -46,6 +51,12 @@ public class ZahtevService {
         
         if (gradjanin.getRole() != Role.GRADJANIN) {
             throw new RuntimeException("Samo građani mogu kreirati zahteve");
+        }
+        
+        // Proveri starost korisnika
+        String validacijaStarosti = validirajStarost(jmbg, kreiranjeZahtevaDTO.getTipDokumenta());
+        if (validacijaStarosti != null) {
+            throw new RuntimeException(validacijaStarosti);
         }
         
         // Proveri da li lična karta već postoji
@@ -125,11 +136,42 @@ public class ZahtevService {
         if (odobravanjeDTO.getStatus() == StatusZahteva.ODOBREN) {
             if (zahtev.getTipDokumenta() == TipDokumenta.LICNA_KARTA) {
                 kreirajLicnuKartu(zahtev);
+                kreirajObavestenje(zahtev.getGradjaninJmbg(), 
+                    "Zahtev za ličnu kartu je odobren", 
+                    "Vaš zahtev za kreiranje lične karte je uspešno odobren. " + 
+                    (odobravanjeDTO.getKomentar() != null ? "Komentar: " + odobravanjeDTO.getKomentar() : ""),
+                    NotificationType.ZAHTEV_ODOBREN, zahtev.getId());
             } else if (zahtev.getTipDokumenta() == TipDokumenta.PRODUZENJE_LICNE_KARTE) {
                 produziLicnuKartu(zahtev);
+                kreirajObavestenje(zahtev.getGradjaninJmbg(), 
+                    "Zahtev za produženje lične karte je odobren", 
+                    "Vaš zahtev za produženje lične karte je uspešno odobren. " + 
+                    (odobravanjeDTO.getKomentar() != null ? "Komentar: " + odobravanjeDTO.getKomentar() : ""),
+                    NotificationType.ZAHTEV_ODOBREN, zahtev.getId());
             } else if (zahtev.getTipDokumenta() == TipDokumenta.PASOS) {
                 kreirajPasos(zahtev);
+                kreirajObavestenje(zahtev.getGradjaninJmbg(), 
+                    "Zahtev za pasoš je odobren", 
+                    "Vaš zahtev za kreiranje pasoša je uspešno odobren. " + 
+                    (odobravanjeDTO.getKomentar() != null ? "Komentar: " + odobravanjeDTO.getKomentar() : ""),
+                    NotificationType.ZAHTEV_ODOBREN, zahtev.getId());
             }
+        } else if (odobravanjeDTO.getStatus() == StatusZahteva.ODBIJEN) {
+            // Kreiraj obaveštenje za odbijeni zahtev
+            String tipDokumentaStr = "";
+            if (zahtev.getTipDokumenta() == TipDokumenta.LICNA_KARTA) {
+                tipDokumentaStr = "ličnu kartu";
+            } else if (zahtev.getTipDokumenta() == TipDokumenta.PRODUZENJE_LICNE_KARTE) {
+                tipDokumentaStr = "produženje lične karte";
+            } else if (zahtev.getTipDokumenta() == TipDokumenta.PASOS) {
+                tipDokumentaStr = "pasoš";
+            }
+            
+            kreirajObavestenje(zahtev.getGradjaninJmbg(), 
+                "Zahtev je odbijen", 
+                "Vaš zahtev za " + tipDokumentaStr + " je odbijen. " + 
+                (odobravanjeDTO.getKomentar() != null ? "Razlog: " + odobravanjeDTO.getKomentar() : "Nije naveden razlog."),
+                NotificationType.ZAHTEV_ODBIJEN, zahtev.getId());
         }
         
         zahtev = zahtevRepository.save(zahtev);
@@ -285,6 +327,57 @@ public class ZahtevService {
         return null; // Pasoš je validan
     }
     
+    public String validirajStarost(String jmbg, String tipDokumentaStr) {
+        TipDokumenta tipDokumenta;
+        try {
+            tipDokumenta = TipDokumenta.valueOf(tipDokumentaStr);
+        } catch (IllegalArgumentException e) {
+            return "Nevažeći tip dokumenta";
+        }
+        
+        return validirajStarost(jmbg, tipDokumenta);
+    }
+    
+    private String validirajStarost(String jmbg, TipDokumenta tipDokumenta) {
+        User gradjanin = authServiceClient.getUserByJmbg(jmbg);
+        
+        if (gradjanin == null) {
+            return "Korisnik nije pronađen";
+        }
+        
+        LocalDate danas = LocalDate.now();
+        LocalDate datumRodjenja = gradjanin.getBirthday();
+        
+        if (datumRodjenja == null) {
+            return "Datum rođenja nije definisan";
+        }
+        
+        int godine = Period.between(datumRodjenja, danas).getYears();
+        
+        // Validacija za ličnu kartu i pasoš - minimum 10 godina
+        if (tipDokumenta == TipDokumenta.LICNA_KARTA || tipDokumenta == TipDokumenta.PASOS) {
+            if (godine < 10) {
+                return "Morate imati najmanje 10 godina da biste kreirali " + 
+                       (tipDokumenta == TipDokumenta.LICNA_KARTA ? "ličnu kartu" : "pasoš") + 
+                       ". Trenutno imate " + godine + " godina.";
+            }
+        }
+        
+        // Validacija za produženje lične karte - minimum 10 godina
+        if (tipDokumenta == TipDokumenta.PRODUZENJE_LICNE_KARTE) {
+            if (godine < 10) {
+                return "Morate imati najmanje 10 godina da biste produžili ličnu kartu. Trenutno imate " + godine + " godina.";
+            }
+        }
+        
+        return null; // Starost je validna
+    }
+    
+    private void kreirajObavestenje(String userJmbg, String title, String message, NotificationType type, Long zahtevId) {
+        Notification notification = new Notification(userJmbg, title, message, type, zahtevId);
+        notificationRepository.save(notification);
+    }
+    
     public void kreirajIstekluLicnuKartu(String jmbg) {
         User gradjanin = authServiceClient.getUserByJmbg(jmbg);
         
@@ -415,6 +508,27 @@ public class ZahtevService {
         dto.setDatumOdobrenja(zahtev.getDatumOdobrenja());
         
         return dto;
+    }
+    
+    // Notification methods
+    public List<Notification> getObavestenjaZaKorisnika(String jmbg) {
+        return notificationRepository.findByUserJmbgOrderByCreatedAtDesc(jmbg);
+    }
+    
+    public List<Notification> getNeprocitanaObavestenja(String jmbg) {
+        return notificationRepository.findByUserJmbgAndIsReadFalseOrderByCreatedAtDesc(jmbg);
+    }
+    
+    public long getBrojNeprocitanihObavestenja(String jmbg) {
+        return notificationRepository.countByUserJmbgAndIsReadFalse(jmbg);
+    }
+    
+    public void oznaciKaoProcitanu(Long notificationId) {
+        notificationRepository.markAsReadById(notificationId);
+    }
+    
+    public void oznaciSveKaoProcitane(String jmbg) {
+        notificationRepository.markAllAsReadByUserJmbg(jmbg);
     }
 }
 

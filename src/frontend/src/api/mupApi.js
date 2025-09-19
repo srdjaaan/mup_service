@@ -66,6 +66,37 @@ export const mupApi = {
         return mupInstance.get(`/api/zahtevi/korisnik/${jmbg}/validiraj-licnu-kartu`);
     },
 
+    // Validacija pasoša
+    validirajPasos: (jmbg) => {
+        return mupInstance.get(`/api/zahtevi/korisnik/${jmbg}/validiraj-pasos`);
+    },
+
+    // Validacija starosti
+    validirajStarost: (jmbg, tipDokumenta) => {
+        return mupInstance.get(`/api/zahtevi/korisnik/${jmbg}/validiraj-starost/${tipDokumenta}`);
+    },
+
+    // Obaveštenja
+    getObavestenja: (jmbg) => {
+        return mupInstance.get(`/api/zahtevi/korisnik/${jmbg}/obavestenja`);
+    },
+
+    getNeprocitanaObavestenja: (jmbg) => {
+        return mupInstance.get(`/api/zahtevi/korisnik/${jmbg}/obavestenja/neprocitana`);
+    },
+
+    getBrojNeprocitanihObavestenja: (jmbg) => {
+        return mupInstance.get(`/api/zahtevi/korisnik/${jmbg}/obavestenja/broj-neprocitanih`);
+    },
+
+    oznaciKaoProcitanu: (notificationId) => {
+        return mupInstance.post(`/api/zahtevi/obavestenja/${notificationId}/oznaci-procitanu`);
+    },
+
+    oznaciSveKaoProcitane: (jmbg) => {
+        return mupInstance.post(`/api/zahtevi/korisnik/${jmbg}/obavestenja/oznaci-sve-procitane`);
+    },
+
     // Dohvatanje dokumenata korisnika
     getDokumentiKorisnika: (jmbg) => {
         return mupInstance.get(`/api/zahtevi/korisnik/${jmbg}/dokumenti`);

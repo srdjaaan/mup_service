@@ -73,7 +73,11 @@ const Home = () => {
                                                 </span>
                                             </div>
                                             <div className="zahtev-details">
-                                                <p><strong>Tip dokumenta:</strong> {zahtev.tipDokumenta}</p>
+                                                <p><strong>Tip dokumenta:</strong> {
+                                                    zahtev.tipDokumenta === 'LICNA_KARTA' && 'Lična karta'
+                                                }{zahtev.tipDokumenta === 'PRODUZENJE_LICNE_KARTE' && 'Produženje lične karte'}
+                                                {zahtev.tipDokumenta === 'PASOS' && 'Pasoš'}
+                                                {!['LICNA_KARTA', 'PRODUZENJE_LICNE_KARTE', 'PASOS'].includes(zahtev.tipDokumenta) && zahtev.tipDokumenta}</p>
                                                 <p><strong>Razlog:</strong> {zahtev.razlog}</p>
                                                 <p><strong>Datum kreiranja:</strong> {new Date(zahtev.datumKreiranja).toLocaleDateString('sr-RS')}</p>
                                                 {zahtev.komentar && (
