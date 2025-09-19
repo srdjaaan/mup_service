@@ -3,8 +3,8 @@ import auth_service.model.Gender;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "licne_karte")
-public class LicnaKarta {
+@Table(name="pasosi")
+public class Pasos {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,10 +18,10 @@ public class LicnaKarta {
     private Gender gender;
 
     @Column(nullable = false, unique = true)
-    private String jmbg;
+    private String drzavljanstvo;
 
     @Column(nullable = false, unique = true)
-    private String brojLicneKarte;
+    private String brojPasosa;
 
     public Long getId() {
         return id;
@@ -47,19 +47,19 @@ public class LicnaKarta {
         this.gender = gender;
     }
 
-    public String getJmbg() {
-        return jmbg;
+    public String getDrzavljanstvo() {
+        return drzavljanstvo;
     }
 
-    public void setJmbg(String jmbg) {
-        this.jmbg = jmbg;
+    public void setDrzavljanstvo(String drzavljanstvo) {
+        this.drzavljanstvo = drzavljanstvo;
     }
 
-    public String getBrojLicneKarte() {
-        return brojLicneKarte;
+    public String getBrojPasosa() {
+        return brojPasosa;
     }
 
-    public void setBrojLicneKarte(String brojLicneKarte) {
-        this.brojLicneKarte = brojLicneKarte;
+    public void setBrojPasosa(String brojPasosa) {
+        this.brojPasosa = brojPasosa;
     }
 }

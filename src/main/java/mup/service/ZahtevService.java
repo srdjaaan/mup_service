@@ -6,6 +6,7 @@ import mup.DTO.ZahtevDTO;
 import mup.model.*;
 import mup.repository.ZahtevRepository;
 import mup.repository.LicnaKartaRepository;
+import mup.repository.PasosRepository;
 import auth_service.model.User;
 import auth_service.model.Role;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -27,6 +29,9 @@ public class ZahtevService {
     
     @Autowired
     private LicnaKartaRepository licnaKartaRepository;
+    
+    @Autowired
+    private PasosRepository pasosRepository;
     
     @Autowired
     private AuthServiceClient authServiceClient;
@@ -68,6 +73,25 @@ public class ZahtevService {
             }
         }
         
+        // Proveri da li je zahtev za kreiranje pasoša
+        if (kreiranjeZahtevaDTO.getTipDokumenta() == TipDokumenta.PASOS) {
+            // Proveri da li korisnik ima ličnu kartu
+            if (!licnaKartaRepository.existsByJmbg(jmbg)) {
+                throw new RuntimeException("Morate imati ličnu kartu da bi kreirali pasoš");
+            }
+            
+            // Proveri da li je lična karta validna
+            String validacijskaPoruka = validirajLicnuKartu(jmbg);
+            if (validacijskaPoruka != null) {
+                throw new RuntimeException("Morate imati ličnu kartu da bi kreirali pasoš");
+            }
+            
+            // Proveri da li pasoš već postoji
+            if (pasosRepository.existsByDrzavljanstvo(jmbg)) {
+                throw new RuntimeException("Pasoš već postoji za ovog korisnika");
+            }
+        }
+        
         Zahtev zahtev = new Zahtev(gradjanin.getJmbg(), kreiranjeZahtevaDTO.getTipDokumenta(), kreiranjeZahtevaDTO.getRazlog());
         zahtev = zahtevRepository.save(zahtev);
         
@@ -97,12 +121,14 @@ public class ZahtevService {
         zahtev.setKomentar(odobravanjeDTO.getKomentar());
         zahtev.setDatumOdobrenja(LocalDateTime.now());
         
-        // Ako je zahtev odobren, kreiraj ličnu kartu ili produži postojeću
+        // Ako je zahtev odobren, kreiraj ličnu kartu, produži postojeću ili kreiraj pasoš
         if (odobravanjeDTO.getStatus() == StatusZahteva.ODOBREN) {
             if (zahtev.getTipDokumenta() == TipDokumenta.LICNA_KARTA) {
                 kreirajLicnuKartu(zahtev);
             } else if (zahtev.getTipDokumenta() == TipDokumenta.PRODUZENJE_LICNE_KARTE) {
                 produziLicnuKartu(zahtev);
+            } else if (zahtev.getTipDokumenta() == TipDokumenta.PASOS) {
+                kreirajPasos(zahtev);
             }
         }
         
@@ -164,11 +190,47 @@ public class ZahtevService {
         }
     }
     
+    private void kreirajPasos(Zahtev zahtev) {
+        if (zahtev.getTipDokumenta() == TipDokumenta.PASOS) {
+            User gradjanin = authServiceClient.getUserByJmbg(zahtev.getGradjaninJmbg());
+            
+            if (gradjanin == null) {
+                throw new RuntimeException("Korisnik sa JMBG-om " + zahtev.getGradjaninJmbg() + " nije pronađen");
+            }
+            
+            // Kreiraj Document
+            Document document = new Document();
+            document.setName(gradjanin.getName());
+            document.setLastname(gradjanin.getLastname());
+            document.setBirthday(gradjanin.getBirthday());
+            document.setPlaceOfBirth(gradjanin.getPlaceOfBirth());
+            document.setUserJmbg(gradjanin.getJmbg());
+            document.setCreatedAt(LocalDateTime.now().toLocalDate());
+            document.setExpiresAt(LocalDateTime.now().plusYears(10).toLocalDate());
+            
+            // Kreiraj Pasoš
+            Pasos pasos = new Pasos();
+            pasos.setDocument(document);
+            pasos.setGender(gradjanin.getGender());
+            pasos.setDrzavljanstvo(gradjanin.getJmbg());
+            pasos.setBrojPasosa(generisiBrojPasosa());
+            
+            pasosRepository.save(pasos);
+        }
+    }
+    
     private String generisiBrojLicneKarte() {
         // Generiši jedinstveni broj lične karte sa 5 cifara
         Random random = new Random();
         int broj = random.nextInt(90000) + 10000; // 10000-99999
         return "LK" + broj;
+    }
+    
+    private String generisiBrojPasosa() {
+        // Generiši jedinstveni broj pasoša sa 5 cifara
+        Random random = new Random();
+        int broj = random.nextInt(90000) + 10000; // 10000-99999
+        return "PS" + broj;
     }
     
     public String validirajLicnuKartu(String jmbg) {
@@ -195,6 +257,32 @@ public class ZahtevService {
         }
         
         return null; // Lična karta je validna
+    }
+    
+    public String validirajPasos(String jmbg) {
+        List<Pasos> pasosi = pasosRepository.findByDocumentUserJmbg(jmbg);
+        
+        if (pasosi.isEmpty()) {
+            return "Korisnik nema pasoš";
+        }
+        
+        // Pronađi najnoviji pasoš
+        Pasos najnovijiPasos = pasosi.stream()
+                .max((p1, p2) -> p1.getDocument().getCreatedAt().compareTo(p2.getDocument().getCreatedAt()))
+                .orElse(null);
+        
+        if (najnovijiPasos == null) {
+            return "Korisnik nema pasoš";
+        }
+        
+        LocalDate danas = LocalDate.now();
+        LocalDate datumIsteka = najnovijiPasos.getDocument().getExpiresAt();
+        
+        if (danas.isAfter(datumIsteka)) {
+            return "Pasoš je istekao. Morate poslati zahtev da kreirate novi pasoš.";
+        }
+        
+        return null; // Pasoš je validan
     }
     
     public void kreirajIstekluLicnuKartu(String jmbg) {
@@ -266,7 +354,10 @@ public class ZahtevService {
     }
     
     public List<Document> getDokumentiZaKorisnika(String jmbg) {
-        return licnaKartaRepository.findByJmbg(jmbg).stream()
+        List<Document> dokumenti = new ArrayList<>();
+        
+        // Dodaj lične karte
+        List<Document> licneKarte = licnaKartaRepository.findByJmbg(jmbg).stream()
                 .map(licnaKarta -> {
                     Document doc = licnaKarta.getDocument();
                     // Dodaj dodatne podatke o ličnoj karti
@@ -275,6 +366,22 @@ public class ZahtevService {
                     return doc;
                 })
                 .collect(Collectors.toList());
+        
+        // Dodaj pasoše
+        List<Document> pasosi = pasosRepository.findByDocumentUserJmbg(jmbg).stream()
+                .map(pasos -> {
+                    Document doc = pasos.getDocument();
+                    // Dodaj dodatne podatke o pasošu
+                    doc.setTipDokumenta("PASOS");
+                    doc.setBrojDokumenta(pasos.getBrojPasosa());
+                    return doc;
+                })
+                .collect(Collectors.toList());
+        
+        dokumenti.addAll(licneKarte);
+        dokumenti.addAll(pasosi);
+        
+        return dokumenti;
     }
     
     private ZahtevDTO convertToDTO(Zahtev zahtev) {

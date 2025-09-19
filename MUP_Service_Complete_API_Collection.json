@@ -222,6 +222,34 @@
           }
         },
         {
+          "name": "Kreiraj Zahtev za Pasoš",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gradjanin_token}}",
+                "description": "JWT token za građanina"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipDokumenta\": \"PASOS\",\n  \"razlog\": \"Kreiranje pasoša\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/zahtevi/kreiraj",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "zahtevi", "kreiraj"]
+            }
+          }
+        },
+        {
           "name": "Moji Zahtevi (Gradjanin)",
           "request": {
             "method": "GET",
@@ -379,6 +407,26 @@
               "host": ["localhost"],
               "port": "8081",
               "path": ["api", "zahtevi", "korisnik", "{{jmbg}}", "dokumenti"]
+            }
+          }
+        },
+        {
+          "name": "Validiraj Pasoš",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gradjanin_token}}",
+                "description": "JWT token za građanina"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8081/api/zahtevi/korisnik/{{jmbg}}/validiraj-pasos",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["api", "zahtevi", "korisnik", "{{jmbg}}", "validiraj-pasos"]
             }
           }
         }
@@ -678,6 +726,311 @@
                   "host": ["localhost"],
                   "port": "8081",
                   "path": ["api", "zahtevi", "korisnik", "1111111111111", "validiraj-licnu-kartu"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 3: Kreiranje Pasoša",
+          "item": [
+            {
+              "name": "1. Registruj Građanina",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"jmbg\": \"2222222222222\",\n  \"name\": \"Miloš\",\n  \"lastname\": \"Milošević\",\n  \"username\": \"milos123\",\n  \"password\": \"password123\",\n  \"birthday\": \"1988-07-20\",\n  \"placeOfBirth\": \"Niš\",\n  \"role\": \"GRADJANIN\",\n  \"gender\": \"MUSKI\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/api/auth/register",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8080",
+                  "path": ["api", "auth", "register"]
+                }
+              }
+            },
+            {
+              "name": "2. Login Građanina",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"milos123\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/api/auth/login",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8080",
+                  "path": ["api", "auth", "login"]
+                }
+              }
+            },
+            {
+              "name": "3. Kreiraj Zahtev za Ličnu Kartu (Prvo mora imati ličnu kartu)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{gradjanin_token}}",
+                    "description": "Kopiraj token iz prethodnog koraka"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tipDokumenta\": \"LICNA_KARTA\",\n  \"razlog\": \"Prva lična karta\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/zahtevi/kreiraj",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8081",
+                  "path": ["api", "zahtevi", "kreiraj"]
+                }
+              }
+            },
+            {
+              "name": "4. Login Policajca",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"petar123\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/api/auth/login",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8080",
+                  "path": ["api", "auth", "login"]
+                }
+              }
+            },
+            {
+              "name": "5. Odobri Zahtev za Ličnu Kartu",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{policajac_token}}",
+                    "description": "Kopiraj token iz prethodnog koraka"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ODOBREN\",\n  \"komentar\": \"Zahtev za ličnu kartu je odobren\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/zahtevi/{{zahtev_id}}/odobri",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8081",
+                  "path": ["api", "zahtevi", "{{zahtev_id}}", "odobri"]
+                }
+              }
+            },
+            {
+              "name": "6. Kreiraj Zahtev za Pasoš",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{gradjanin_token}}",
+                    "description": "Token građanina"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tipDokumenta\": \"PASOS\",\n  \"razlog\": \"Kreiranje pasoša\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/zahtevi/kreiraj",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8081",
+                  "path": ["api", "zahtevi", "kreiraj"]
+                }
+              }
+            },
+            {
+              "name": "7. Odobri Zahtev za Pasoš",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{policajac_token}}",
+                    "description": "Token policajca"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ODOBREN\",\n  \"komentar\": \"Zahtev za pasoš je odobren\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/zahtevi/{{zahtev_id}}/odobri",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8081",
+                  "path": ["api", "zahtevi", "{{zahtev_id}}", "odobri"]
+                }
+              }
+            },
+            {
+              "name": "8. Proveri Dokumente (Trebalo bi videti i ličnu kartu i pasoš)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{gradjanin_token}}",
+                    "description": "Token građanina"
+                  }
+                ],
+                "url": {
+                  "raw": "http://localhost:8081/api/zahtevi/korisnik/2222222222222/dokumenti",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8081",
+                  "path": ["api", "zahtevi", "korisnik", "2222222222222", "dokumenti"]
+                }
+              }
+            },
+            {
+              "name": "9. Validiraj Pasoš",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{gradjanin_token}}",
+                    "description": "Token građanina"
+                  }
+                ],
+                "url": {
+                  "raw": "http://localhost:8081/api/zahtevi/korisnik/2222222222222/validiraj-pasos",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8081",
+                  "path": ["api", "zahtevi", "korisnik", "2222222222222", "validiraj-pasos"]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scenario 4: Test Validacije - Kreiranje Pasoša bez Lične Karte",
+          "item": [
+            {
+              "name": "1. Registruj Građanina",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"jmbg\": \"3333333333333\",\n  \"name\": \"Jovana\",\n  \"lastname\": \"Jovanović\",\n  \"username\": \"jovana123\",\n  \"password\": \"password123\",\n  \"birthday\": \"1995-12-10\",\n  \"placeOfBirth\": \"Subotica\",\n  \"role\": \"GRADJANIN\",\n  \"gender\": \"ZENSKI\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/api/auth/register",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8080",
+                  "path": ["api", "auth", "register"]
+                }
+              }
+            },
+            {
+              "name": "2. Login Građanina",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"jovana123\",\n  \"password\": \"password123\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8080/api/auth/login",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8080",
+                  "path": ["api", "auth", "login"]
+                }
+              }
+            },
+            {
+              "name": "3. Pokušaj Kreiranja Zahteva za Pasoš (Trebalo bi da vrati grešku)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{gradjanin_token}}",
+                    "description": "Kopiraj token iz prethodnog koraka"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"tipDokumenta\": \"PASOS\",\n  \"razlog\": \"Kreiranje pasoša\"\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/zahtevi/kreiraj",
+                  "protocol": "http",
+                  "host": ["localhost"],
+                  "port": "8081",
+                  "path": ["api", "zahtevi", "kreiraj"]
                 }
               }
             }

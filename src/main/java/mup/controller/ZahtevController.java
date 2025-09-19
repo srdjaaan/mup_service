@@ -209,6 +209,35 @@ public class ZahtevController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @GetMapping("/korisnik/{jmbg}/validiraj-pasos")
+    public ResponseEntity<?> validirajPasos(@PathVariable String jmbg, HttpServletRequest request) {
+        try {
+            String token = extractTokenFromRequest(request);
+            if (token == null || !jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nevažeći token");
+            }
+
+            // Proveri da li korisnik traži svoje dokumente ili je policajac
+            String tokenJmbg = jwtUtil.getJmbgFromToken(token);
+            String role = jwtUtil.getRoleFromToken(token);
+
+            if (!jmbg.equals(tokenJmbg) && !"POLICAJAC".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Možete videti samo svoje dokumente");
+            }
+
+            String validacijskaPoruka = zahtevService.validirajPasos(jmbg);
+            
+            if (validacijskaPoruka == null) {
+                return ResponseEntity.ok(Map.of("status", "VALIDAN", "poruka", "Pasoš je validan"));
+            } else {
+                return ResponseEntity.ok(Map.of("status", "NEVALIDAN", "poruka", validacijskaPoruka));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
     
     private String extractTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
