@@ -257,7 +257,7 @@ public class ZahtevController {
             }
 
             String validacijskaPoruka = zahtevService.validirajStarost(jmbg, tipDokumenta);
-            
+
             if (validacijskaPoruka == null) {
                 return ResponseEntity.ok(Map.of("status", "VALIDNA", "poruka", "Starost je validna za kreiranje dokumenta"));
             } else {

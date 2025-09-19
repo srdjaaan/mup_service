@@ -147,7 +147,6 @@ const PolicajacPanel = ({ user }) => {
                                     <span>{zahtev.gradjaninJmbg}</span>
                                 </div>
                                 <div className="detail-row">
-                                    <strong>Tip dokumenta:</strong>
                                     <span className="document-type">
                                         {zahtev.tipDokumenta === 'LICNA_KARTA' && 'Lična karta'}
                                         {zahtev.tipDokumenta === 'PRODUZENJE_LICNE_KARTE' && 'Produženje lične karte'}

@@ -46,7 +46,7 @@ const Navbar = () => {
             <div className="navbar-links">
                 <Link to="/home" className="nav-link">Home</Link>
                 {user && (
-                    <div className="navbar-right">
+<div className="navbar-right">
                         <NotificationBell 
                             user={user} 
                             onNotificationClick={handleNotificationClick}
@@ -62,7 +62,7 @@ const Navbar = () => {
                             </div>
                             <div className="dropdown-arrow">▼</div>
                         </div>
-                        
+
                         {showUserMenu && (
                             <div className="user-menu">
                                 <div className="menu-item" onClick={handleProfileClick}>
