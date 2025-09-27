@@ -59,6 +59,30 @@ const ZahtevCard = ({ user, onZahtevCreated }) => {
         }
     };
 
+    // Validacija starosti za vozacku dozvolu kada se promeni kategorija
+    const validirajStarostZaVozackuDozvolu = async () => {
+        if (formData.tipDokumenta !== 'VOZACKA_DOZVOLA' || !formData.kategorija) {
+            setStarostPoruka('');
+            return;
+        }
+
+        setStarostLoading(true);
+        setStarostPoruka('');
+        
+        try {
+            const response = await mupApi.validirajStarostZaKategoriju(user.jmbg, formData.kategorija);
+            if (response.data.status === 'VALIDNA') {
+                setStarostPoruka('Starost je validna za kreiranje vozacke dozvole');
+            } else {
+                setStarostPoruka(response.data.poruka);
+            }
+        } catch (err) {
+            setStarostPoruka('Greška pri validaciji starosti');
+        } finally {
+            setStarostLoading(false);
+        }
+    };
+
     // Pozovi validaciju kada se promeni tip dokumenta
     useEffect(() => {
         // Validacija lične karte za pasoš i vozacku dozvolu
@@ -71,6 +95,13 @@ const ZahtevCard = ({ user, onZahtevCreated }) => {
         // Resetuj starost poruku kada se promeni tip dokumenta
         setStarostPoruka('');
     }, [formData.tipDokumenta]);
+
+    // Pozovi validaciju starosti kada se promeni kategorija za vozacku dozvolu
+    useEffect(() => {
+        if (formData.tipDokumenta === 'VOZACKA_DOZVOLA') {
+            validirajStarostZaVozackuDozvolu();
+        }
+    }, [formData.kategorija]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -201,6 +232,24 @@ const ZahtevCard = ({ user, onZahtevCreated }) => {
                     </div>
                 )}
 
+                {/* Validacija starosti za vozacku dozvolu */}
+                {formData.tipDokumenta === 'VOZACKA_DOZVOLA' && formData.kategorija && (
+                    <div className="form-group">
+                        <div className="validation-section">
+                            <label></label>
+                            {starostLoading ? (
+                                <div className="loading-indicator">
+                                    <span>Proverava se starost...</span>
+                                </div>
+                            ) : starostPoruka ? (
+                                <div className={`validation-message ${starostPoruka.includes('validna') ? 'success' : 'error'}`}>
+                                    {starostPoruka}
+                                </div>
+                            ) : null}
+                        </div>
+                    </div>
+                )}
+
                 {error && <div className="error-message">{error}</div>}
                 {message && <div className="success-message">{message}</div>}
 
@@ -209,7 +258,8 @@ const ZahtevCard = ({ user, onZahtevCreated }) => {
                     className="submit-btn"
                     disabled={loading || 
                              ((formData.tipDokumenta === 'PASOS' || formData.tipDokumenta === 'VOZACKA_DOZVOLA') && validacijaPoruka && !validacijaPoruka.includes('validna')) ||
-                             (formData.tipDokumenta === 'VOZACKA_DOZVOLA' && !formData.kategorija)}
+                             (formData.tipDokumenta === 'VOZACKA_DOZVOLA' && !formData.kategorija) ||
+                             (formData.tipDokumenta === 'VOZACKA_DOZVOLA' && formData.kategorija && starostPoruka && !starostPoruka.includes('validna'))}
                 >
                     {loading ? 'Šalje se...' : 'Pošalji zahtev'}
                 </button>

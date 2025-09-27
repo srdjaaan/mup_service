@@ -76,6 +76,16 @@ export const mupApi = {
         return mupInstance.get(`/api/zahtevi/korisnik/${jmbg}/validiraj-starost/${tipDokumenta}`);
     },
 
+    // Validacija vozacke dozvole
+    validirajVozackuDozvolu: (jmbg) => {
+        return mupInstance.get(`/api/zahtevi/korisnik/${jmbg}/validiraj-vozacku-dozvolu`);
+    },
+
+    // Validacija starosti za specifičnu kategoriju vozacke dozvole
+    validirajStarostZaKategoriju: (jmbg, kategorija) => {
+        return mupInstance.get(`/api/zahtevi/korisnik/${jmbg}/validiraj-starost-za-kategoriju/${kategorija}`);
+    },
+
     // Obaveštenja
     getObavestenja: (jmbg) => {
         return mupInstance.get(`/api/zahtevi/korisnik/${jmbg}/obavestenja`);

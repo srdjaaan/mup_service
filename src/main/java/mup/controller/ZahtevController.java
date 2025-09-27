@@ -299,6 +299,35 @@ public class ZahtevController {
         }
     }
 
+    @GetMapping("/korisnik/{jmbg}/validiraj-starost-za-kategoriju/{kategorija}")
+    public ResponseEntity<?> validirajStarostZaKategoriju(@PathVariable String jmbg, @PathVariable String kategorija, HttpServletRequest request) {
+        try {
+            String token = extractTokenFromRequest(request);
+            if (token == null || !jwtUtil.validateToken(token)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nevažeći token");
+            }
+
+            // Proveri da li korisnik traži svoje dokumente ili je policajac
+            String tokenJmbg = jwtUtil.getJmbgFromToken(token);
+            String role = jwtUtil.getRoleFromToken(token);
+
+            if (!jmbg.equals(tokenJmbg) && !"POLICAJAC".equals(role)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Možete videti samo svoje dokumente");
+            }
+
+            String validacijskaPoruka = zahtevService.validirajStarostZaKategoriju(jmbg, kategorija);
+
+            if (validacijskaPoruka == null) {
+                return ResponseEntity.ok(Map.of("status", "VALIDNA", "poruka", "Starost je validna za " + kategorija + " kategoriju"));
+            } else {
+                return ResponseEntity.ok(Map.of("status", "NEVALIDNA", "poruka", validacijskaPoruka));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
     // Notification endpoints
     @GetMapping("/korisnik/{jmbg}/obavestenja")
     public ResponseEntity<?> getObavestenja(@PathVariable String jmbg, HttpServletRequest request) {

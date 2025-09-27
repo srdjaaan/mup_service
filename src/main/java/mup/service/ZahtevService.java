@@ -58,12 +58,10 @@ public class ZahtevService {
             throw new RuntimeException("Samo građani mogu kreirati zahteve");
         }
 
-        // Proveri starost korisnika (osim za vozacku dozvolu - validacija se izvršava tek pri odobravanju)
-        if (kreiranjeZahtevaDTO.getTipDokumenta() != TipDokumenta.VOZACKA_DOZVOLA) {
-            String validacijaStarosti = validirajStarost(jmbg, kreiranjeZahtevaDTO.getTipDokumenta());
-            if (validacijaStarosti != null) {
-                throw new RuntimeException(validacijaStarosti);
-            }
+        // Proveri starost korisnika
+        String validacijaStarosti = validirajStarost(jmbg, kreiranjeZahtevaDTO.getTipDokumenta());
+        if (validacijaStarosti != null) {
+            throw new RuntimeException(validacijaStarosti);
         }
 
         // Proveri da li lična karta već postoji
@@ -115,6 +113,12 @@ public class ZahtevService {
             // Proveri da li je kategorija odabrana
             if (kreiranjeZahtevaDTO.getKategorija() == null) {
                 throw new RuntimeException("Morate odabrati kategoriju za vozacku dozvolu");
+            }
+
+            // Proveri starost za kategoriju vozacke dozvole
+            String validacijaStarostiZaKategoriju = validirajStarostZaKategoriju(jmbg, kreiranjeZahtevaDTO.getKategorija());
+            if (validacijaStarostiZaKategoriju != null) {
+                throw new RuntimeException(validacijaStarostiZaKategoriju);
             }
 
             // Proveri da li korisnik ima ličnu kartu
@@ -363,12 +367,6 @@ public class ZahtevService {
     }
 
     private void kreirajNovuVozackuDozvolu(Zahtev zahtev, User gradjanin) {
-        // Proveri starost za kategoriju
-        String validacijaStarosti = validirajStarostZaKategoriju(zahtev.getGradjaninJmbg(), zahtev.getKategorija());
-        if (validacijaStarosti != null) {
-            throw new RuntimeException(validacijaStarosti);
-        }
-        
         // Kreiraj Document
         Document document = new Document();
         document.setName(gradjanin.getName());
@@ -415,12 +413,6 @@ public class ZahtevService {
         // Proveri da li korisnik već ima tu kategoriju
         if (najnovijaVozackaDozvola.imaKategoriju(zahtev.getKategorija())) {
             throw new RuntimeException("Korisnik već ima " + zahtev.getKategorija() + " kategoriju na svojoj vozackoj dozvoli.");
-        }
-
-        // Proveri starost za novu kategoriju
-        String validacijaStarosti = validirajStarostZaKategoriju(zahtev.getGradjaninJmbg(), zahtev.getKategorija());
-        if (validacijaStarosti != null) {
-            throw new RuntimeException(validacijaStarosti);
         }
 
         // Dodaj kategoriju
@@ -560,22 +552,6 @@ public class ZahtevService {
         if (tipDokumenta == TipDokumenta.PRODUZENJE_LICNE_KARTE) {
             if (godine < 10) {
                 return "Morate imati najmanje 10 godina da biste produžili ličnu kartu. Trenutno imate " + godine + " godina.";
-            }
-        }
-
-        // Validacija za vozacku dozvolu - različite starosti za različite kategorije
-        if (tipDokumenta == TipDokumenta.VOZACKA_DOZVOLA) {
-            // Za A kategoriju - minimum 16 godina
-            if (godine < 16) {
-                return "Morate imati najmanje 16 godina da biste kreirali vozacku dozvolu za A kategoriju. Trenutno imate " + godine + " godina.";
-            }
-            // Za B kategoriju - minimum 18 godina
-            if (godine < 18) {
-                return "Morate imati najmanje 18 godina da biste kreirali vozacku dozvolu za B kategoriju. Trenutno imate " + godine + " godina.";
-            }
-            // Za C i D kategorije - minimum 21 godina
-            if (godine < 21) {
-                return "Morate imati najmanje 21 godinu da biste kreirali vozacku dozvolu za C i D kategorije. Trenutno imate " + godine + " godina.";
             }
         }
 
@@ -808,6 +784,17 @@ public class ZahtevService {
                 NotificationType.ZAHTEV_ODOBREN,
                 null
         );
+    }
+
+    public String validirajStarostZaKategoriju(String jmbg, String kategorijaStr) {
+        Kategorija kategorija;
+        try {
+            kategorija = Kategorija.valueOf(kategorijaStr);
+        } catch (IllegalArgumentException e) {
+            return "Nevažeća kategorija";
+        }
+        
+        return validirajStarostZaKategoriju(jmbg, kategorija);
     }
 
     private String validirajStarostZaKategoriju(String jmbg, Kategorija kategorija) {
