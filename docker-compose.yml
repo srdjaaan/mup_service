@@ -56,5 +56,24 @@ services:
       auth-service:
         condition: service_started
 
+  opendata-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.opendata
+    container_name: opendata_service
+    ports:
+      - "8082:8082"
+    environment:
+      SERVICES_AUTH-URL: http://auth-service:8080/api/auth
+      SERVICES_MUP-URL: http://mup-service:8081/api/zahtevi
+      SPRING_PROFILES_ACTIVE: opendata
+    depends_on:
+      postgres:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      mup-service:
+        condition: service_started
+
 volumes:
   postgres_data:
