@@ -44,6 +44,13 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- For dinamic excel file streaming -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>5.2.3</version>
+        </dependency>
+
         <!-- Spring Boot Starter Security (if needed for Auth) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

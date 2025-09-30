@@ -463,6 +463,17 @@ public class ZahtevController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    @GetMapping("/document/all")
+    public ResponseEntity<?> getDokumenti() {
+        try {
+            List<Document> dokumenti = zahtevService.getSviDokumenti();
+            return ResponseEntity.ok(dokumenti);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
     
     private String extractTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");

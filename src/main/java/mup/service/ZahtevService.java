@@ -830,4 +830,48 @@ public class ZahtevService {
 
         return null; // Starost je validna
     }
+
+    public List<Document> getSviDokumenti() {
+        List<Document> dokumenti = new ArrayList<>();
+
+        // Lične karte
+        List<Document> licneKarte = licnaKartaRepository.findAll().stream()
+                .map(licnaKarta -> {
+                    Document doc = licnaKarta.getDocument();
+                    doc.setTipDokumenta("LICNA_KARTA");
+                    doc.setBrojDokumenta(licnaKarta.getBrojLicneKarte());
+                    return doc;
+                })
+                .collect(Collectors.toList());
+
+        // Pasoši
+        List<Document> pasosi = pasosRepository.findAll().stream()
+                .map(pasos -> {
+                    Document doc = pasos.getDocument();
+                    doc.setTipDokumenta("PASOS");
+                    doc.setBrojDokumenta(pasos.getBrojPasosa());
+                    return doc;
+                })
+                .collect(Collectors.toList());
+
+        // Vozačke dozvole
+        List<Document> vozackeDozvole = vozackaDozvolaRepository.findAll().stream()
+                .map(vozackaDozvola -> {
+                    Document doc = vozackaDozvola.getDocument();
+                    doc.setTipDokumenta("VOZACKA_DOZVOLA");
+                    doc.setBrojDokumenta("VD" + vozackaDozvola.getId());
+                    String kategorijeStr = vozackaDozvola.getKategorije().stream()
+                            .map(Enum::name)
+                            .collect(Collectors.joining(", "));
+                    doc.setKategorije(kategorijeStr);
+                    return doc;
+                })
+                .collect(Collectors.toList());
+
+        dokumenti.addAll(licneKarte);
+        dokumenti.addAll(pasosi);
+        dokumenti.addAll(vozackeDozvole);
+
+        return dokumenti;
+    }
 }

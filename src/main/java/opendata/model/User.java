@@ -3,11 +3,9 @@ package opendata.model;
 import auth_service.model.Gender;
 import auth_service.model.Role;
 
-import javax.persistence.Id;
 import java.time.LocalDate;
 
 public class User {
-    @Id
     private String jmbg;
     private String name;
     private String lastname;
