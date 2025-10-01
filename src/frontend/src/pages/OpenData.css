@@ -1,0 +1,17 @@
+.filter-container {
+    margin-bottom: 20px;
+}
+
+.zahtev-item button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.zahtev-item button:hover {
+    background-color: #217dbb;
+}

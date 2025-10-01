@@ -498,6 +498,28 @@ public class OpenDataService {
                 .toList();
     }
 
+    public byte[] exportAllDocumentsToExcel() {
+        List<DocumentDTO> documents = getAllDocuments();
+
+        String[] headers = {"Name", "Last Name", "Birthday", "Place of Birth", "CreatedAt", "ExpiresAt", "TipDokumenta", "Kategorije"};
+
+        return ExcelExporter.exportToExcel(
+                "Documents",
+                headers,
+                documents,
+                document -> List.of(
+                        document.getName() != null ? document.getName() : "",
+                        document.getLastname() != null ? document.getLastname() : "",
+                        document.getBirthday() != null ? document.getBirthday().toString() : "",
+                        document.getPlaceOfBirth() != null ? document.getPlaceOfBirth() : "",
+                        document.getCreatedAt() != null ? document.getCreatedAt().toString() : "",
+                        document.getExpiresAt() != null ? document.getExpiresAt().toString() : "",
+                        document.getTipDokumenta() != null ? document.getTipDokumenta() : "",
+                        document.getKategorije() != null ? document.getKategorije() : ""
+                )
+        );
+    }
+
     private List<User> fetchAllUsers() {
         String url = authServiceUrl + "/users";
 

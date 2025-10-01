@@ -46,7 +46,8 @@ const Navbar = () => {
             <div className="navbar-links">
                 <Link to="/home" className="nav-link">Home</Link>
                 {user && (
-<div className="navbar-right">
+                    <div className="navbar-right">
+                        <Link to="/opendata" className="nav-link">Open Data</Link>
                         <NotificationBell 
                             user={user} 
                             onNotificationClick={handleNotificationClick}

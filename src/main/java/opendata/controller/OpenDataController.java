@@ -313,4 +313,18 @@ public class OpenDataController {
     public ResponseEntity<List<DocumentDTO>> getAllDocuments() {
         return ResponseEntity.ok(openDataService.getAllDocuments());
     }
+
+    @GetMapping("/documents/excel")
+    public ResponseEntity<byte[]> exportDocumentsExcel() {
+        byte[] excelFile = openDataService.exportAllDocumentsToExcel();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=documents.xlsx");
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .body(excelFile);
+    }
 }
